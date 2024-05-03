@@ -11,12 +11,14 @@ def query():
     """
     load_dotenv()
 
-    user = os.getenv('USER')
+    host= os.getenv('HOST')
+    user = os.getenv('USERNAME')
     password = os.getenv('PASSWORD')
-    dbname = os.getenv('DBNAME')
+    dbname = os.getenv('DBNAME') 
+    port = os.getenv('PORT')
 
-    conn = psycopg2.connect("dbname="+dbname+" user="+user+" password="+password,
-                            cursor_factory=psycopg2.extras.DictCursor)
+    conn = psycopg2.connect(host=host, dbname=dbname, user=user, password=password, port=port)
+                           # cursor_factory=psycopg2.extras.DictCursor)
     cur = conn.cursor()
     cur.execute("SELECT * FROM sales WHERE quant > 10")
 
