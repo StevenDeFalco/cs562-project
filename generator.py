@@ -28,7 +28,7 @@ def main():
 
 
 
-    body = """
+    #    body = """
 
 
     column_names = {}
@@ -152,10 +152,72 @@ def main():
 
 
     # One pass for each grouping variable
-    '''for i in range(len(groupingVariables)):
+    for i in range(1, numberGrouping + 1):
+        # e.g. of ith_condition = state='NJ'
+        ith_conditions = []
+        # get (sigma) conditions for ith group 
+        for cond in conditions:
+            split_cond = cond.split(".")
+            if split_cond[0] == str(i):
+                ith_conditions.append(split_cond[1])
+        # e.g. of parsed_condition = (<idx-of-attribute>, <attrib-val>, <operator>)
+        parsed_condition = []
+        # parse conditions for '>', '<', '=', '<=', '>='
+        for cond in ith_conditions:
+            if '>' in cond and '=' not in cond:
+                split_cond = cond.split('>')
+                idx_of_attribute = column_names[split_cond[0]]
+                parsed_condition.append(idx_of_attribute, split_cond[1], '>')
+            elif '<' in cond and '=' not in cond:
+                split_cond = cond.split('<')
+                idx_of_attribute = column_names[split_cond[0]]
+                parsed_condition.append(idx_of_attribute, split_cond[1], '<')
+            elif '=' in cond and '>' not in cond and '<' not in cond:
+                split_cond = cond.split('=')
+                idx_of_attribute = column_names[split_cond[0]]
+                parsed_condition.append(idx_of_attribute, split_cond[1], '=')
+            elif '<=' in cond:
+                split_cond = cond.split('<=')
+                idx_of_attribute = column_names[split_cond[0]]
+                parsed_condition.append(idx_of_attribute, split_cond[1], '<=')
+            elif '>=' in cond:
+                split_cond = cond.split('>=')
+                idx_of_attribute = column_names[split_cond[0]]
+                parsed_condition.append(idx_of_attribute, split_cond[1], '>=')
         for row in db:
-            '''
-    """
+            allTrue = True
+            for cond in parsed_condition:
+                # if condition is met, continue 
+                row_value = row[cond[0]]
+                operator = cond[2] 
+                check_value = cond[1]
+                if operator == '>' and row_value > check_value:
+                    continue 
+                elif operator == '<' and row_value < check_value:
+                    continue
+                elif operator == '=' and row_value == check_value:
+                    continue
+                elif operator == '<=' and row_value <= check_value:
+                    continue
+                elif operator == '>=' and row_value >= check_value:
+                    continue
+                else:
+                    allTrue = False 
+                    break
+            if allTrue:
+                # then update rows in H hTable
+                groupingValues = []
+                for var in groupingVariables:
+                    groupingValues.append(row[column_names[var]])
+                groupingValues = set(groupingValues)
+                for h_row in hTable:
+                    # find the h_row that we need to update, should exist already
+                    if groupingValues == h_row.get_grouping_values():
+                        for agg in fVector:
+                            agg_list = agg.split('_')
+                            if len(agg_list) == 3 and agg_list[0] == str(i):
+                                h_row.set_attribute_value(agg, row)
+    # """
 
 
 
