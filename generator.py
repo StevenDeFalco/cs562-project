@@ -184,13 +184,14 @@ def main():
                 split_cond = cond.split('>=')
                 idx_of_attribute = column_names[split_cond[0]]
                 parsed_condition.append((idx_of_attribute, split_cond[1], '>='))
-        for row in db:
+        for row in db[:10]:
             allTrue = True
             for cond in parsed_condition:
                 # if condition is met, continue 
                 row_value = row[cond[0]]
                 operator = cond[2] 
                 check_value = cond[1]
+                print(f"if {row_value} {operator} {check_value}...")
                 if operator == '>' and row_value > check_value:
                     continue 
                 elif operator == '<' and row_value < check_value:
