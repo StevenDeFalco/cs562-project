@@ -150,7 +150,7 @@ def main():
             try:
                 print(new_h_row)
             except:
-                print('Couldn't print row being created')
+                print("Couldn't print row being created")
             hTable.append(new_h_row)
 
 
