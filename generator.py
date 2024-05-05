@@ -167,27 +167,27 @@ def main():
             if '>' in cond and '=' not in cond:
                 split_cond = cond.split('>')
                 idx_of_attribute = column_names[split_cond[0]]
-                check_value = split_cond[1].replace("'", "").replace('"', "")
+                check_value = split_cond[1].strip("'").strip('"')
                 parsed_condition.append((idx_of_attribute, check_value, '>'))
             elif '<' in cond and '=' not in cond:
                 split_cond = cond.split('<')
                 idx_of_attribute = column_names[split_cond[0]]
-                check_value = split_cond[1].replace("'", "").replace('"', "")
+                check_value = split_cond[1].strip("'").strip('"')
                 parsed_condition.append((idx_of_attribute, check_value, '<'))
             elif '=' in cond and '>' not in cond and '<' not in cond:
                 split_cond = cond.split('=')
                 idx_of_attribute = column_names[split_cond[0]]
-                check_value = split_cond[1].replace("'", "").replace('"', "")
+                check_value = split_cond[1].strip("'").strip('"')
                 parsed_condition.append((idx_of_attribute, check_value, '='))
             elif '<=' in cond:
                 split_cond = cond.split('<=')
                 idx_of_attribute = column_names[split_cond[0]]
-                check_value = split_cond[1].replace("'", "").replace('"', "")
+                check_value = split_cond[1].strip("'").strip('"')
                 parsed_condition.append((idx_of_attribute, check_value, '<='))
             elif '>=' in cond:
                 split_cond = cond.split('>=')
                 idx_of_attribute = column_names[split_cond[0]]
-                check_value = split_cond[1].replace("'", "").replace('"', "")
+                check_value = split_cond[1].strip("'").strip('"')
                 parsed_condition.append((idx_of_attribute, check_value, '>='))
         for row in db[:10]:
             allTrue = True
@@ -195,7 +195,7 @@ def main():
                 # if condition is met, continue 
                 row_value = row[cond[0]]
                 operator = cond[2] 
-                check_value = cond[1]
+                check_value = cond[1].strip('"').strip("'")
                 print(f"if {row_value} {operator} {check_value}...")
                 if operator == '>' and row_value > check_value:
                     continue 
