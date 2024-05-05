@@ -45,8 +45,14 @@ def main():
             self.data = data
             self.map = self.make_map()
 
+        def __str__(self):
+            result = ''
+            for key, value in self.map.items():
+                result += f"{key}: {value}, "
+            return result
+
         def __repr__(self):
-            return self.map
+            return self.__str__()
 
         def make_map(self):
             map = {}
