@@ -187,10 +187,10 @@ def main():
     db, columns = get_database()
     {body}
     for row in hTable:
-        if all(x is not none for x in row):
+        try:
             print(row)
-        else:
-            print("Some elts are None, can't be printed")
+        catch Exception e: 
+            print("Error! Whoops...")
     
 if "__main__" == __name__:
     main()
