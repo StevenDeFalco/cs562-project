@@ -215,10 +215,8 @@ def main():
                     continue
                 else:
                     allTrue = False 
-                    print("they are NOT NOT NOT all true boss")
                     break
             if allTrue:
-                print("they are all true boss")
                 # then update rows in H table
                 groupingValues = []
                 for var in groupingVariables:
@@ -250,9 +248,9 @@ def main():
         for token in having_tokens:
             try: 
                 token_val = h_row.map[token]
-                result_tokens.append(token_val)
+                result_tokens.append(str(token_val))
             except:
-                result_tokens.append(token)
+                result_tokens.append(str(token))
         logic_statement = " ".join(result_tokens)
         if eval(logic_statement):
             result_hTable.append(h_row)
