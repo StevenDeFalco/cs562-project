@@ -46,12 +46,12 @@ def main():
             self.map = self.make_map()
 
         def __repr__(self):
-            for key, value in self.map.items():
+            '''for key, value in self.map.items():
                 try:
                     print(f"{key}: {value}")
                 except:
-                    print(f"{key}: ERROR!!!!")
-            # print(self.map)
+                    print(f"{key}: ERROR!!!!")'''
+            print(self.map)
 
         def make_map(self):
             map = {}
@@ -145,7 +145,12 @@ def main():
                 break
         # if not in H table, create new H table row and add to H table
         if not inHTable:
+            print("Making new row w/ data... {row}, using gvs={groupingVariables}, agg={fVector}")
             new_h_row = H(groupingVariables, row, fVector)
+            try:
+                print(new_h_row)
+            except:
+                print("Couldn't print row being created")
             hTable.append(new_h_row)
 
 
@@ -188,11 +193,11 @@ havingClause = {mf_struct["G"]}
 def main():
     db, columns = get_database()
     {body}
-    for row in hTable:
+    '''for row in hTable:
         try:
             print(row)
         except: 
-            print("Error! Whoops...")
+            print("Error! Whoops...")'''
     
 if "__main__" == __name__:
     main()
