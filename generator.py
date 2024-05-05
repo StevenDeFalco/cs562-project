@@ -46,12 +46,7 @@ def main():
             self.map = self.make_map()
 
         def __repr__(self):
-            '''for key, value in self.map.items():
-                try:
-                    print(f"{key}: {value}")
-                except:
-                    print(f"{key}: ERROR!!!!")'''
-            print(self.map)
+            return self.map
 
         def make_map(self):
             map = {}
@@ -154,17 +149,6 @@ def main():
     '''for i in range(len(groupingVariables)):
         for row in db:
             '''
-
-    count_right = 0
-    count_wrong = 0
-    for row in hTable:
-        try:
-            count_right += 1
-            print(row)
-        except: 
-            print("Error! Whoops...")
-            count_wrong += 1
-    print(f"{count_right} - {count_wrong}")
     """
 
 
@@ -199,6 +183,8 @@ havingClause = {mf_struct["G"]}
 def main():
     db, columns = get_database()
     {body}
+    for row in hTable:
+        print(row)
     
 if "__main__" == __name__:
     main()
