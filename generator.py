@@ -184,6 +184,7 @@ def main():
             for cond in parsed_conditions:
                 # if condition is met, check next condition to determine if all true
                 cond_list = cond.split()
+                result_tokens = []
                 for token in cond_list:
                     try: 
                         token = token.strip().strip('"').strip("'")
