@@ -176,7 +176,7 @@ numberGrouping = {mf_struct["n"]}
 groupingVariables = {mf_struct["V"]}
 fVector = {mf_struct["F"]}
 conditions = {mf_struct["sigma"]}
-havingClause = {{mf_struct["G"]}}
+havingClause = {mf_struct["G"]}
 
 def main():
     db, columns = get_database()

@@ -64,7 +64,7 @@ class PhiOperator:
                 continue
             if line.startswith("HAVING"):
                 if curr_idx + 1 == len(lines):
-                    struct["G"] = ""
+                    struct["G"] = []
                     break
                 struct["G"] = lines[curr_idx + 1].strip()
                 break
