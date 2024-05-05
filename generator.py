@@ -145,12 +145,7 @@ def main():
                 break
         # if not in H table, create new H table row and add to H table
         if not inHTable:
-            print(f'Making new row w/ data... {row}, using gvs={groupingVariables}, agg={fVector}')
             new_h_row = H(groupingVariables, row, fVector)
-            try:
-                print(new_h_row)
-            except:
-                print("Couldn't print row being created")
             hTable.append(new_h_row)
 
 
@@ -193,11 +188,16 @@ havingClause = {mf_struct["G"]}
 def main():
     db, columns = get_database()
     {body}
-    '''for row in hTable:
+    count_right = 0
+    count_wrong = 0
+    for row in hTable:
         try:
             print(row)
+            count_right += 1
         except: 
-            print("Error! Whoops...")'''
+            print("Error! Whoops...")
+            count_wrong += 1
+    print(f"{count_right} - {count_wrong}")
     
 if "__main__" == __name__:
     main()
