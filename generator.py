@@ -196,6 +196,13 @@ def main():
                 row_value = row[cond[0]]
                 operator = cond[2] 
                 check_value = cond[1].strip().strip('"').strip("'")
+                if isinstance(row_value, str):
+                    str_len = len(check_value)
+                    check_value = check_value[1:str_len-1]
+                if isinstance(row_value, int):
+                    check_value = int(check_value)
+                if isinstance(row_value, float):
+                    check_value = float(check_value)
                 print(f"if {str(row_value)} {operator} {str(check_value)}...")
                 if operator == '>' and row_value > check_value:
                     continue 
