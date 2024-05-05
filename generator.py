@@ -50,7 +50,6 @@ def main():
 
         def __repr__(self):
             print(self.map)
-            print("\n\n")
 
         def make_map(self):
             map = {}
