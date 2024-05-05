@@ -302,7 +302,7 @@ havingClause = {mf_struct["G"]}[0]
 def main():
     db, columns = get_database()
     {body}
-    print(tabulate(hTable, headers='keys', tablefmt='grid'))
+    print(tabulate.tabulate(hTable, headers='keys', tablefmt='grid'))
     
 if "__main__" == __name__:
     main()
