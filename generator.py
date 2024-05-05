@@ -189,7 +189,7 @@ def main():
     for row in hTable:
         try:
             print(row)
-        catch Exception e: 
+        except Exception e: 
             print("Error! Whoops...")
     
 if "__main__" == __name__:
