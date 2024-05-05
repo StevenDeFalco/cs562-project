@@ -54,7 +54,7 @@ def main():
                 idx = column_names[att]
                 map[att] = self.data[idx]
             for aggre in self.aggregates:
-                agg_list = aggregate.split('_')
+                agg_list = aggre.split('_')
                 # get the aggregate function (i.e. sum) and attribute (i.e. quant)
                 if len(agg_list) == 2:
                     agg, att = agg_list[0], agg_list[1]    
