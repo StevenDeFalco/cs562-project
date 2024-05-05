@@ -188,7 +188,6 @@ def main():
     {body}
     for row in hTable:
         print(row)
-        print("\n\n")
     
 if "__main__" == __name__:
     main()
