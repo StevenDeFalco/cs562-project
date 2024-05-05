@@ -187,8 +187,9 @@ def main():
                 result_tokens = []
                 for token in cond_list:
                     try: 
-                        token = token.strip().strip('"').strip("'")
                         token_val = row[column_names[token]]
+                        if isinstance(token_val, str):
+                            token_val = "'" + token_val + "'"
                         result_tokens.append(str(token_val))
                     except:
                         result_tokens.append(str(token))
