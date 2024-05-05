@@ -263,7 +263,7 @@ def main():
         projected_h_row = {}
         for key, value in h_row.map.items():
             if key in selectAttributes:
-                projected_h_row.append[key] = value 
+                projected_h_row[key] = value 
         newHTable.append(projected_h_row)
     hTable = newHTable
 
