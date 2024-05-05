@@ -28,7 +28,7 @@ def main():
 
 
 
-    body = """
+        body = """
 
 
     column_names = {}
@@ -219,7 +219,7 @@ def main():
                     break
             if allTrue:
                 print("they are all true boss")
-                # then update rows in H hTable
+                # then update rows in H table
                 groupingValues = []
                 for var in groupingVariables:
                     groupingValues.append(row[column_names[var]])
@@ -231,6 +231,23 @@ def main():
                             agg_list = agg.split('_')
                             if len(agg_list) == 3 and agg_list[0] == str(i):
                                 h_row.set_attribute_value(agg, row)
+
+
+    for h_row in hTable:
+        for attribute in h_row:
+            split_att = attribute.split('_')
+            agg = split_att[1] if len(split_att) == 3 else split_att[0]
+            if agg.lower() == 'avg':
+                avg_val = h_row[attribute]['avg']
+                h_row[attribute] = avg_val
+
+
+
+    # Implement checks in the HAVING clause
+    # or_clauses = havingClause.split(' or ')
+    # for clause in or_clauses:
+
+
     """
 
 
@@ -260,7 +277,7 @@ numberGrouping = {mf_struct["n"]}
 groupingVariables = {mf_struct["V"]}
 fVector = {mf_struct["F"]}
 conditions = {mf_struct["sigma"]}
-havingClause = {mf_struct["G"]}
+havingClause = {mf_struct["G"]}[0]
 
 def main():
     db, columns = get_database()
