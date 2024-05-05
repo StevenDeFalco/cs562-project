@@ -293,7 +293,7 @@ def main():
         result_hTable = []
         # Iterate through each h_row to check if meets having condition
         for h_row in hTable:
-            having_tokens = havingClause.split()
+            having_tokens = havingClause[0].split()
             result_tokens = []
             for token in having_tokens:
                 token = '==' if token == '=' else token
