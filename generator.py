@@ -189,7 +189,7 @@ def main():
                 idx_of_attribute = column_names[split_cond[0]]
                 check_value = split_cond[1].strip("'").strip('"')
                 parsed_condition.append((idx_of_attribute, check_value, '>='))
-        for row in db[:10]:
+        for row in db:
             allTrue = True
             for cond in parsed_condition:
                 # if condition is met, continue and check next condition to determine if all true
@@ -203,7 +203,6 @@ def main():
                     check_value = int(check_value)
                 if isinstance(row_value, float):
                     check_value = float(check_value)
-                print(f"if {str(row_value)} {operator} {str(check_value)}...")
                 if operator == '>' and row_value > check_value:
                     continue 
                 elif operator == '<' and row_value < check_value:
