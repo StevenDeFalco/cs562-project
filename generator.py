@@ -48,6 +48,9 @@ def main():
             self.data = data
             self.map = self.make_map()
 
+        def __repr__(self):
+            print(self.map)
+
         def make_map(self):
             map = {}
             for att in self.groupingAttributes:
@@ -183,7 +186,9 @@ havingClause = {mf_struct["G"]}
 def main():
     db, columns = get_database()
     {body}
-    print(hTable)
+    for row in hTable:
+        print(row)
+        print("\n\n")
     
 if "__main__" == __name__:
     main()
