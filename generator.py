@@ -167,23 +167,23 @@ def main():
             if '>' in cond and '=' not in cond:
                 split_cond = cond.split('>')
                 idx_of_attribute = column_names[split_cond[0]]
-                parsed_condition.append(idx_of_attribute, split_cond[1], '>')
+                parsed_condition.append((idx_of_attribute, split_cond[1], '>'))
             elif '<' in cond and '=' not in cond:
                 split_cond = cond.split('<')
                 idx_of_attribute = column_names[split_cond[0]]
-                parsed_condition.append(idx_of_attribute, split_cond[1], '<')
+                parsed_condition.append((idx_of_attribute, split_cond[1], '<'))
             elif '=' in cond and '>' not in cond and '<' not in cond:
                 split_cond = cond.split('=')
                 idx_of_attribute = column_names[split_cond[0]]
-                parsed_condition.append(idx_of_attribute, split_cond[1], '=')
+                parsed_condition.append((idx_of_attribute, split_cond[1], '='))
             elif '<=' in cond:
                 split_cond = cond.split('<=')
                 idx_of_attribute = column_names[split_cond[0]]
-                parsed_condition.append(idx_of_attribute, split_cond[1], '<=')
+                parsed_condition.append((idx_of_attribute, split_cond[1], '<='))
             elif '>=' in cond:
                 split_cond = cond.split('>=')
                 idx_of_attribute = column_names[split_cond[0]]
-                parsed_condition.append(idx_of_attribute, split_cond[1], '>=')
+                parsed_condition.append((idx_of_attribute, split_cond[1], '>='))
         for row in db:
             allTrue = True
             for cond in parsed_condition:
