@@ -49,7 +49,7 @@ def main():
             self.map = self.make_map()
 
         def __repr__(self):
-            print(f"self.map{{\n\n}}")
+            print(self.map)
 
         def make_map(self):
             map = {}
