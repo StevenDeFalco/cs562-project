@@ -161,8 +161,55 @@ def main():
             if split_cond[0] == str(i):
                 ith_conditions.append(split_cond[1])
         # e.g. of parsed_condition = (<idx-of-attribute>, <attrib-val>, <operator>)
-        parsed_condition = []
-        # parse conditions for '>', '<', '=', '<=', '>='
+        
+        parsed_conditions = []
+        for cond in ith_condition:
+            if '>' in cond and '=' not in cond:
+                cl = cond.split('>')
+                parsed_conditions.append(f'{cl[0]} > {cl[1]}')
+            elif '<' in cond and '=' not in cond:
+                cl = cond.split('<')
+                parsed_conditions.append(f'{cl[0]} < {cl[1]}')
+            elif '=' in cond and '>' not in cond and '<' not in cond:
+                cl = cond.split('=')
+                parsed_conditions.append(f'{cl[0]} == {cl[1]}')
+            elif '<=' in cond:
+                cl = cond.split('<=')
+                parsed_conditions.append(f'{cl[0]} <= {cl[1]}')
+            elif '>=' in cond:
+                cl = cond.split('>=')
+                parsed_conditions.append(f'{cl[0]} >= {cl[1]}')
+        for row in db:
+            allTrue = True
+            for cond in parsed_condition:
+                # if condition is met, check next condition to determine if all true
+                cond_list = cond.split()
+                for token on cond_list:
+                    try: 
+                        token.strip().strip('"').strip("'")
+                        token_val = row[column_names[token]]
+                        result_tokens.append(str(token_val))
+                    except:
+                        result_tokens.append(str(token))
+                logic_statement = " ".join(result_tokens)
+                if not eval(logic_statement):
+                    allTrue = False
+            # if all conditions are met...
+            if allTrue:
+                # then update rows in H table
+                groupingValues = []
+                for var in groupingVariables:
+                    groupingValues.append(row[column_names[var]])
+                groupingValues = set(groupingValues)
+                for h_row in hTable:
+                    # find the h_row that we need to update, should exist already
+                    if groupingValues == h_row.get_grouping_values():
+                        for agg in fVector:
+                            agg_list = agg.split('_')
+                            if len(agg_list) == 3 and agg_list[0] == str(i):
+                                h_row.set_attribute_value(agg, row)
+
+        '''# parse conditions for '>', '<', '=', '<=', '>='
         for cond in ith_conditions:
             if '>' in cond and '=' not in cond:
                 split_cond = cond.split('>')
@@ -228,7 +275,7 @@ def main():
                         for agg in fVector:
                             agg_list = agg.split('_')
                             if len(agg_list) == 3 and agg_list[0] == str(i):
-                                h_row.set_attribute_value(agg, row)
+                                h_row.set_attribute_value(agg, row)'''
 
 
     for h_row in hTable:
