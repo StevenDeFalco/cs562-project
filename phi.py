@@ -53,6 +53,7 @@ class PhiOperator:
             if line.startswith("SELECT CONDITION"):
                 if lines[curr_idx + 1].startswith("HAVING"):
                     curr_idx += 1
+                    struct["sigma"] = []
                     continue
                 curr_idx += 1
                 conditions = []
