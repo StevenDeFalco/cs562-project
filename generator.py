@@ -234,7 +234,7 @@ def main():
 
 
     for h_row in hTable:
-        for key, value in h_row.items():
+        for key, value in h_row.map.items():
             split_att = key.split('_')
             agg = split_att[1] if len(split_att) == 3 else split_att[0]
             if agg.lower() == 'avg':
