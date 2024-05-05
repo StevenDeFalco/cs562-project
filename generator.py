@@ -159,8 +159,8 @@ def main():
     count_wrong = 0
     for row in hTable:
         try:
-            print(row)
             count_right += 1
+            print(row)
         except: 
             print("Error! Whoops...")
             count_wrong += 1
