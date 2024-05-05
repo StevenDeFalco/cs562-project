@@ -242,10 +242,20 @@ def main():
                 h_row.map[key] = avg_val
 
 
-
-    # Implement checks in the HAVING clause
-    # or_clauses = havingClause.split(' or ')
-    # for clause in or_clauses:
+    result_hTable = []
+    # Iterate through each h_row to check if meets having condition
+    for h_row in hTable:
+        having_tokens = havingClause.split()
+        result_tokens = []
+        for token in having_tokens:
+            try: 
+                token_val = h_row.map[token]
+                result_tokens.append(token_val)
+            except:
+                result_tokens.append(token)
+        logic_statement = result_tokens.join(" ")
+        if eval(logic_statement):
+            result_hTable.append(h_row)
 
 
     """
