@@ -145,12 +145,12 @@ def main():
                 break
         # if not in H table, create new H table row and add to H table
         if not inHTable:
-            print("Making new row w/ data... {row}, using gvs={groupingVariables}, agg={fVector}")
+            print(f'Making new row w/ data... {row}, using gvs={groupingVariables}, agg={fVector}')
             new_h_row = H(groupingVariables, row, fVector)
             try:
                 print(new_h_row)
             except:
-                print("Couldn't print row being created")
+                print('Couldn't print row being created')
             hTable.append(new_h_row)
 
 
