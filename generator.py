@@ -246,6 +246,7 @@ def main():
         having_tokens = havingClause.split()
         result_tokens = []
         for token in having_tokens:
+            token = '==' if token == '=' else token
             try: 
                 token_val = h_row.map[token]
                 result_tokens.append(str(token_val))
@@ -255,6 +256,7 @@ def main():
         print("To Eval... ", logic_statement)
         if eval(logic_statement):
             result_hTable.append(h_row)
+    hTable = result_hTable
 
 
     """
