@@ -163,7 +163,7 @@ def main():
         # e.g. of parsed_condition = (<idx-of-attribute>, <attrib-val>, <operator>)
         
         parsed_conditions = []
-        for cond in ith_condition:
+        for cond in ith_conditions:
             if '>' in cond and '=' not in cond:
                 cl = cond.split('>')
                 parsed_conditions.append(f'{cl[0]} > {cl[1]}')
