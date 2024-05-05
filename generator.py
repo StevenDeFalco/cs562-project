@@ -238,8 +238,8 @@ def main():
             split_att = key.split('_')
             agg = split_att[1] if len(split_att) == 3 else split_att[0]
             if agg.lower() == 'avg':
-                avg_val = h_row[key]['avg']
-                h_row[key] = avg_val
+                avg_val = h_row.map[key]['avg']
+                h_row.map[key] = avg_val
 
 
 
