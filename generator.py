@@ -253,10 +253,19 @@ def main():
             except:
                 result_tokens.append(str(token))
         logic_statement = " ".join(result_tokens)
-        print("To Eval... ", logic_statement)
         if eval(logic_statement):
             result_hTable.append(h_row)
     hTable = result_hTable
+
+    newHTable = []
+    # project only the attributes given in the SELECT clause
+    for h_row in hTable:
+        projected_h_row = {}
+        for key, value in h_row.map.items():
+            if key in selectAttributes:
+                projected_h_row.append[key] = value 
+        newHTable.append(projected_h_row)
+    hTable = newHTable
 
 
     """
@@ -293,8 +302,7 @@ havingClause = {mf_struct["G"]}[0]
 def main():
     db, columns = get_database()
     {body}
-    for row in hTable:
-        print(row)
+    print(tabulate(hTable, headers='keys', tablefmt='grid'))
     
 if "__main__" == __name__:
     main()
