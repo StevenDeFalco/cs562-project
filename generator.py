@@ -192,13 +192,12 @@ def main():
         for row in db[:10]:
             allTrue = True
             for cond in parsed_condition:
-                # if condition is met, continue 
+                # if condition is met, continue and check next condition to determine if all true
                 row_value = row[cond[0]]
                 operator = cond[2] 
-                check_value = cond[1].strip('"').strip("'")
+                check_value = cond[1]
+                check_value = check_value.strip('"').strip("'")
                 print(f"if {str(row_value)} {operator} {str(check_value)}...")
-                print("row", type(row_value))
-                print("check", type(check_value))
                 if operator == '>' and row_value > check_value:
                     continue 
                 elif operator == '<' and row_value < check_value:
