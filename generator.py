@@ -195,8 +195,7 @@ def main():
                 # if condition is met, continue and check next condition to determine if all true
                 row_value = row[cond[0]]
                 operator = cond[2] 
-                check_value = cond[1]
-                check_value = check_value.strip('"').strip("'")
+                check_value = cond[1].strip().strip('"').strip("'")
                 print(f"if {str(row_value)} {operator} {str(check_value)}...")
                 if operator == '>' and row_value > check_value:
                     continue 
