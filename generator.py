@@ -76,7 +76,6 @@ def main():
                         map[aggre] = - sys.maxsize - 1
                     elif agg == 'avg':
                         map[aggre] = {'sum': 0, 'count': 0, 'avg': 0}
-
             return map 
 
         def set_attribute_value(self, aggregate, row):
@@ -91,21 +90,21 @@ def main():
             att_val = row[att_idx]
             # Perform appropriate update depending on aggregate
             if agg.lower() == 'sum':
-                current = map[aggregate]
+                current = self.map[aggregate]
                 new = current + att_val
                 self.map[aggregate] = new
             elif agg.lower() == 'min':
-                current = map[aggregate]
+                current = self.map[aggregate]
                 if att_val < current:
                     self.map[aggregate] = att_val
             elif agg.lower() == 'max':
-                current = map[aggregate]
+                current = self.map[aggregate]
                 if att_val > current:
                     self.map[aggregate] = att_val
             elif agg.lower() == 'count':
                 self.map[aggregate] += 1
             elif agg.lower() == 'avg':
-                # e.g. map['1_avg_quant'] = {'sum': 150, 'count': 10, 'avg': 15}
+                # e.g. self.map['1_avg_quant'] = {'sum': 150, 'count': 10, 'avg': 15}
                 prev = self.map[aggregate]
                 new_sum = prev['sum'] + att_val
                 new_count = prev['count'] + 1
