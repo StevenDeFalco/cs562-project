@@ -154,6 +154,17 @@ def main():
     '''for i in range(len(groupingVariables)):
         for row in db:
             '''
+
+    count_right = 0
+    count_wrong = 0
+    for row in hTable:
+        try:
+            print(row)
+            count_right += 1
+        except: 
+            print("Error! Whoops...")
+            count_wrong += 1
+    print(f"{count_right} - {count_wrong}")
     """
 
 
@@ -188,16 +199,6 @@ havingClause = {mf_struct["G"]}
 def main():
     db, columns = get_database()
     {body}
-    count_right = 0
-    count_wrong = 0
-    for row in hTable:
-        try:
-            print(row)
-            count_right += 1
-        except: 
-            print("Error! Whoops...")
-            count_wrong += 1
-    print(f"{count_right} - {count_wrong}")
     
 if "__main__" == __name__:
     main()
