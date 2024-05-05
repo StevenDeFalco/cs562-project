@@ -66,6 +66,6 @@ class PhiOperator:
                 if curr_idx + 1 == len(lines):
                     struct["G"] = []
                     break
-                struct["G"] = lines[curr_idx + 1].strip()
+                struct["G"] = [lines[curr_idx + 1].strip()]
                 break
         return struct
