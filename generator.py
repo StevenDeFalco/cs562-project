@@ -203,8 +203,10 @@ def main():
                     continue
                 else:
                     allTrue = False 
+                    print("they are NOT NOT NOT all true boss")
                     break
             if allTrue:
+                print("they are all true boss")
                 # then update rows in H hTable
                 groupingValues = []
                 for var in groupingVariables:
