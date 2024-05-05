@@ -64,7 +64,7 @@ def main():
                         map[aggre] = att_val
                     elif agg == 'count':
                         map[aggre] = 1
-                    elif agg = 'avg':
+                    elif agg == 'avg':
                         map[aggre] = {'sum': att_val, 'count': 1, 'avg': att_val}
                 else:
                     agg, att = agg_list[1], agg_list[2]    
@@ -74,7 +74,7 @@ def main():
                         map[aggre] = sys.maxsize
                     elif agg == 'max':
                         map[aggre] = - sys.maxsize - 1
-                    elif agg = 'avg':
+                    elif agg == 'avg':
                         map[aggre] = {'sum': 0, 'count': 0, 'avg': 0}
 
             return map 
