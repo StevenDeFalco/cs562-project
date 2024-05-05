@@ -141,7 +141,7 @@ def main():
                 break
         # if not in H table, create new H table row and add to H table
         if not inHTable:
-            new_h_row = H(groupingValues, row, fVector)
+            new_h_row = H(groupingVariables, row, fVector)
             hTable.append(new_h_row)
 
 
