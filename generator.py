@@ -167,23 +167,28 @@ def main():
             if '>' in cond and '=' not in cond:
                 split_cond = cond.split('>')
                 idx_of_attribute = column_names[split_cond[0]]
-                parsed_condition.append((idx_of_attribute, split_cond[1], '>'))
+                check_value = split_cond[1].replace("'", "").replace('"', "")
+                parsed_condition.append((idx_of_attribute, check_value, '>'))
             elif '<' in cond and '=' not in cond:
                 split_cond = cond.split('<')
                 idx_of_attribute = column_names[split_cond[0]]
-                parsed_condition.append((idx_of_attribute, split_cond[1], '<'))
+                check_value = split_cond[1].replace("'", "").replace('"', "")
+                parsed_condition.append((idx_of_attribute, check_value, '<'))
             elif '=' in cond and '>' not in cond and '<' not in cond:
                 split_cond = cond.split('=')
                 idx_of_attribute = column_names[split_cond[0]]
-                parsed_condition.append((idx_of_attribute, split_cond[1], '='))
+                check_value = split_cond[1].replace("'", "").replace('"', "")
+                parsed_condition.append((idx_of_attribute, check_value, '='))
             elif '<=' in cond:
                 split_cond = cond.split('<=')
                 idx_of_attribute = column_names[split_cond[0]]
-                parsed_condition.append((idx_of_attribute, split_cond[1], '<='))
+                check_value = split_cond[1].replace("'", "").replace('"', "")
+                parsed_condition.append((idx_of_attribute, check_value, '<='))
             elif '>=' in cond:
                 split_cond = cond.split('>=')
                 idx_of_attribute = column_names[split_cond[0]]
-                parsed_condition.append((idx_of_attribute, split_cond[1], '>='))
+                check_value = split_cond[1].replace("'", "").replace('"', "")
+                parsed_condition.append((idx_of_attribute, check_value, '>='))
         for row in db[:10]:
             allTrue = True
             for cond in parsed_condition:
