@@ -15,7 +15,7 @@ class PhiOperator:
                     continue
                 lines.append(line)
         curr_idx = 0
-        while curr_idx < len(lines) - 1:
+        while curr_idx < len(lines):
             line = lines[curr_idx]
             if line.startswith("SELECT ATTRIBUTE"):
                 if lines[curr_idx + 1].startswith("NUMBER OF "):
@@ -63,9 +63,8 @@ class PhiOperator:
                 struct["sigma"] = conditions
                 continue
             if line.startswith("HAVING"):
-                if curr_idx + 1 != len(lines):
+                if curr_idx + 1 == len(lines):
                     struct["G"] = ""
-                    break
+                    continue
                 struct["G"] = lines[curr_idx + 1].strip()
-                break
         return struct
