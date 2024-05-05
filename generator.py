@@ -196,7 +196,7 @@ def main():
                 row_value = row[cond[0]]
                 operator = cond[2] 
                 check_value = cond[1].strip('"').strip("'")
-                print(f"if {row_value} {operator} {check_value}...")
+                print(f"if {str(row_value)} {operator} {str(check_value)}...")
                 print("row", type(row_value))
                 print("check", type(check_value))
                 if operator == '>' and row_value > check_value:
