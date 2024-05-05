@@ -240,22 +240,23 @@ def main():
                 h_row.map[key] = avg_val
 
 
-    result_hTable = []
-    # Iterate through each h_row to check if meets having condition
-    for h_row in hTable:
-        having_tokens = havingClause.split()
-        result_tokens = []
-        for token in having_tokens:
-            token = '==' if token == '=' else token
-            try: 
-                token_val = h_row.map[token]
-                result_tokens.append(str(token_val))
-            except:
-                result_tokens.append(str(token))
-        logic_statement = " ".join(result_tokens)
-        if eval(logic_statement):
-            result_hTable.append(h_row)
-    hTable = result_hTable
+    if len(havingClause) != 0:
+        result_hTable = []
+        # Iterate through each h_row to check if meets having condition
+        for h_row in hTable:
+            having_tokens = havingClause.split()
+            result_tokens = []
+            for token in having_tokens:
+                token = '==' if token == '=' else token
+                try: 
+                    token_val = h_row.map[token]
+                    result_tokens.append(str(token_val))
+                except:
+                    result_tokens.append(str(token))
+            logic_statement = " ".join(result_tokens)
+            if eval(logic_statement):
+                result_hTable.append(h_row)
+        hTable = result_hTable
 
     newHTable = []
     # project only the attributes given in the SELECT clause
@@ -297,7 +298,7 @@ numberGrouping = {mf_struct["n"]}
 groupingVariables = {mf_struct["V"]}
 fVector = {mf_struct["F"]}
 conditions = {mf_struct["sigma"]}
-havingClause = {mf_struct["G"]}[0]
+havingClause = {mf_struct["G"]}
 
 def main():
     db, columns = get_database()
