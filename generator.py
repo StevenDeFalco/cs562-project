@@ -184,9 +184,9 @@ def main():
             for cond in parsed_condition:
                 # if condition is met, check next condition to determine if all true
                 cond_list = cond.split()
-                for token on cond_list:
+                for token in cond_list:
                     try: 
-                        token.strip().strip('"').strip("'")
+                        token = token.strip().strip('"').strip("'")
                         token_val = row[column_names[token]]
                         result_tokens.append(str(token_val))
                     except:
