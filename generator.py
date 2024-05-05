@@ -252,6 +252,7 @@ def main():
             except:
                 result_tokens.append(str(token))
         logic_statement = " ".join(result_tokens)
+        print("To Eval... ", logic_statement)
         if eval(logic_statement):
             result_hTable.append(h_row)
 
