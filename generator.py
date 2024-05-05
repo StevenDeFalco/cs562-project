@@ -238,7 +238,7 @@ def main():
             split_att = key.split('_')
             agg = split_att[1] if len(split_att) == 3 else split_att[0]
             if agg.lower() == 'avg':
-                avg_val = h_row.map[key]['avg']
+                avg_val = round(h_row.map[key]['avg'], 2)
                 h_row.map[key] = avg_val
 
 
@@ -253,7 +253,7 @@ def main():
                 result_tokens.append(token_val)
             except:
                 result_tokens.append(token)
-        logic_statement = result_tokens.join(" ")
+        logic_statement = " ".join(result_tokens)
         if eval(logic_statement):
             result_hTable.append(h_row)
 
