@@ -49,7 +49,7 @@ def main():
             self.map = self.make_map()
 
         def __repr__(self):
-            print(self.map)
+            print(f"self.map{{\n\n}}")
 
         def make_map(self):
             map = {}
@@ -187,7 +187,10 @@ def main():
     db, columns = get_database()
     {body}
     for row in hTable:
-        print(row)
+        if all(x is not none for x in row):
+            print(row)
+        else:
+            print("Some elts are None, can't be printed")
     
 if "__main__" == __name__:
     main()
