@@ -36,9 +36,6 @@ def main():
     for i, attrib in enumerate(columns):
         column_names[attrib] = i
 
-
-        # h_table.append(H())
-        # h_table[i].update_row(aggregate, row)
     
     class H:
         '''Class to define one row in the H table'''
@@ -49,7 +46,12 @@ def main():
             self.map = self.make_map()
 
         def __repr__(self):
-            print(self.map)
+            for key, value in self.map.items():
+                try:
+                    print(f"{key}: {value}")
+                except:
+                    print(f"{key}: ERROR!!!!")
+            # print(self.map)
 
         def make_map(self):
             map = {}
