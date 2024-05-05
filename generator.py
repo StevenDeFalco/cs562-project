@@ -129,17 +129,20 @@ def main():
         for var in groupingVariables:
             groupingValues.append(row[column_names[var]])
         groupingValues = set(groupingValues)
+        inHTable= False
         for h_row in hTable:
             # if grouped row already exists in H table, update it
             if groupingValues == h_row.get_grouping_values():
+                inHTable = True
                 for agg in fVector:
                     agg_list = agg.split('_')
                     if len(agg_list) == 2:
                         h_row.set_attribute_value(agg, row)
-            # if not, create new H table row and add to H table
-            else: 
-                new_h_row = H(groupingValues, row, fVector)
-                hTable.append(new_h_row)
+                break
+        # if not in H table, create new H table row and add to H table
+        if not inHTable:
+            new_h_row = H(groupingValues, row, fVector)
+            hTable.append(new_h_row)
 
 
 
