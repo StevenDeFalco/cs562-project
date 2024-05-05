@@ -181,7 +181,7 @@ def main():
                 parsed_conditions.append(f'{cl[0]} >= {cl[1]}')
         for row in db:
             allTrue = True
-            for cond in parsed_condition:
+            for cond in parsed_conditions:
                 # if condition is met, check next condition to determine if all true
                 cond_list = cond.split()
                 for token in cond_list:
