@@ -234,12 +234,12 @@ def main():
 
 
     for h_row in hTable:
-        for attribute in h_row:
-            split_att = attribute.split('_')
+        for key, value in h_row.items():
+            split_att = key.split('_')
             agg = split_att[1] if len(split_att) == 3 else split_att[0]
             if agg.lower() == 'avg':
-                avg_val = h_row[attribute]['avg']
-                h_row[attribute] = avg_val
+                avg_val = h_row[key]['avg']
+                h_row[key] = avg_val
 
 
 
