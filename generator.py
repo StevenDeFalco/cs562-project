@@ -28,7 +28,7 @@ def main():
 
 
 
-    #    body = """
+    body = """
 
 
     column_names = {}
@@ -217,7 +217,7 @@ def main():
                             agg_list = agg.split('_')
                             if len(agg_list) == 3 and agg_list[0] == str(i):
                                 h_row.set_attribute_value(agg, row)
-    # """
+    """
 
 
 
