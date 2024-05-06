@@ -10,13 +10,38 @@ def get_file_path():
       The path to the valid query file if it exists, or None otherwise.
   """
   while True:
-    filename = input("Enter the query file name (in the 'queries' directory): ")
-    file_path = os.path.join("queries", filename)  # Construct full path
-
-    if os.path.exists(file_path):
-      return file_path
+    filename = input(f"Enter the query file name (in the 'queries' directory)"
+                     "or leave blank to enter query parameters manually: ")
+    if filename.strip() != "":
+        file_path = os.path.join("queries", filename)  # Construct full path
+        if os.path.exists(file_path):
+            return file_path
+        else:
+            print(f"Error: File '{filename}' does not exist in the 'queries' directory.")
     else:
-      print(f"Error: File '{filename}' does not exist in the 'queries' directory.")
+        with open('./queries/_tmpQuery.txt', 'w') as f:
+            f.write("SELECT ATTRIBUTE(S):\n")
+            s = input("Input values for S (comma-separated): ")
+            f.write(s + '\n')
+            n = input("Input number of grouping variables (integer): ")
+            f.write("NUMBER OF GROUPING VARIABLES(n):\n")
+            f.write(n + '\n')
+            v = input("Input Grouping Attributes (comma-separated): ")
+            f.write("GROUPING ATTRIBUTES(V):\n")
+            f.write(v + '\n')
+            f_vect = input("Input values of F-vector (comma-separated): ")
+            f.write("F-VECT([F]):\n")
+            f.write(f_vect + '\n')
+            sig = input("Input select conditions (comma-separated): ")
+            sigmas = sig.split(',')
+            f.write("SELECT CONDITION-VECT([σ]):\n")
+            for cond in sigmas:
+                f.write(cond.strip() + '\n')
+            g = input("Input having clause: ")
+            f.write("HAVING_CONDITION(G):\n")
+            f.write(g)
+        return './queries/_tmpQuery.txt'
+
 
 def main():
     """
@@ -25,12 +50,13 @@ def main():
     file (e.g. _generated.py) and then run.
     """
 
-
-
+    file_path = get_file_path()
+    processing = PhiOperator(file_path)
+    if file_path == './queries/_tmpQuery.txt':
+        os.remove(file_path)
+    mf_struct = processing.mf_struct
 
     body = """
-
-
     column_names = {}
     # Get translation dictionary (attribute name --> index)
     for i, attrib in enumerate(columns):
@@ -211,74 +237,6 @@ def main():
                             if len(agg_list) == 3 and agg_list[0] == str(i):
                                 h_row.set_attribute_value(agg, row)
 
-        '''# parse conditions for '>', '<', '=', '<=', '>='
-        for cond in ith_conditions:
-            if '>' in cond and '=' not in cond:
-                split_cond = cond.split('>')
-                idx_of_attribute = column_names[split_cond[0]]
-                check_value = split_cond[1].strip("'").strip('"')
-                parsed_condition.append((idx_of_attribute, check_value, '>'))
-            elif '<' in cond and '=' not in cond:
-                split_cond = cond.split('<')
-                idx_of_attribute = column_names[split_cond[0]]
-                check_value = split_cond[1].strip("'").strip('"')
-                parsed_condition.append((idx_of_attribute, check_value, '<'))
-            elif '=' in cond and '>' not in cond and '<' not in cond:
-                split_cond = cond.split('=')
-                idx_of_attribute = column_names[split_cond[0]]
-                check_value = split_cond[1].strip("'").strip('"')
-                parsed_condition.append((idx_of_attribute, check_value, '='))
-            elif '<=' in cond:
-                split_cond = cond.split('<=')
-                idx_of_attribute = column_names[split_cond[0]]
-                check_value = split_cond[1].strip("'").strip('"')
-                parsed_condition.append((idx_of_attribute, check_value, '<='))
-            elif '>=' in cond:
-                split_cond = cond.split('>=')
-                idx_of_attribute = column_names[split_cond[0]]
-                check_value = split_cond[1].strip("'").strip('"')
-                parsed_condition.append((idx_of_attribute, check_value, '>='))
-        for row in db:
-            allTrue = True
-            for cond in parsed_condition:
-                # if condition is met, continue and check next condition to determine if all true
-                row_value = row[cond[0]]
-                operator = cond[2] 
-                check_value = cond[1].strip().strip('"').strip("'")
-                if isinstance(row_value, str):
-                    str_len = len(check_value)
-                    check_value = check_value[1:str_len-1]
-                if isinstance(row_value, int):
-                    check_value = int(check_value)
-                if isinstance(row_value, float):
-                    check_value = float(check_value)
-                if operator == '>' and row_value > check_value:
-                    continue 
-                elif operator == '<' and row_value < check_value:
-                    continue
-                elif operator == '=' and row_value == check_value:
-                    continue
-                elif operator == '<=' and row_value <= check_value:
-                    continue
-                elif operator == '>=' and row_value >= check_value:
-                    continue
-                else:
-                    allTrue = False 
-                    break
-            if allTrue:
-                # then update rows in H table
-                groupingValues = []
-                for var in groupingVariables:
-                    groupingValues.append(row[column_names[var]])
-                groupingValues = set(groupingValues)
-                for h_row in hTable:
-                    # find the h_row that we need to update, should exist already
-                    if groupingValues == h_row.get_grouping_values():
-                        for agg in fVector:
-                            agg_list = agg.split('_')
-                            if len(agg_list) == 3 and agg_list[0] == str(i):
-                                h_row.set_attribute_value(agg, row)'''
-
 
     for h_row in hTable:
         for key, value in h_row.map.items():
@@ -307,6 +265,7 @@ def main():
                 result_hTable.append(h_row)
         hTable = result_hTable
 
+
     newHTable = []
     # project only the attributes given in the SELECT clause
     for h_row in hTable:
@@ -319,15 +278,6 @@ def main():
 
 
     """
-
-
-
-
-
-    file_path = get_file_path()
-    processing = PhiOperator(file_path)
-    # TODO user input option instead of file path
-    mf_struct = processing.mf_struct
 
     # Note: The f allows formatting with variables.
     #       Also, note the indentation is preserved.
