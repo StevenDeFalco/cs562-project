@@ -1,3 +1,6 @@
+# I pledge my honor that I've abided by the Stevens Honor System
+# Steven DeFalco
+# Lucas Hope
 import os
 import psycopg2
 import psycopg2.extras

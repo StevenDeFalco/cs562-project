@@ -1,3 +1,6 @@
+# I pledge my honor that I've abided by the Stevens Honor System
+# Steven DeFalco
+# Lucas Hope
 import subprocess
 from connect import get_database
 from phi import PhiOperator
