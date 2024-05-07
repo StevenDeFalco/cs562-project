@@ -16,8 +16,8 @@ def get_database():
     dbname = os.getenv('DBNAME') 
     port = os.getenv('PORT')
 
-    conn = psycopg2.connect(host=host, dbname=dbname, user=user, password=password, port=port, 
-                            cursor_factory=psycopg2.extras.DictCursor)
+    conn = psycopg2.connect(host=host, dbname=dbname, user=user, password=password, 
+                            port=port, cursor_factory=psycopg2.extras.DictCursor)
     cur = conn.cursor()
     cur.execute("SELECT * FROM sales")
     column_names = [desc[0] for desc in cur.description]
