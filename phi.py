@@ -86,9 +86,7 @@ class PhiOperator:
                 if len(f_list) == 0:
                     struct['F'] = []
                 else:
-                    
                     struct['F'] = [f.strip() for f in f_list.split(',')]
-
                 curr_idx += 2
                 continue
             '''
@@ -269,7 +267,7 @@ class PhiOperator:
                     f_aggregates_updated = True
             for g_agg in [g_agg.strip() for g_agg in g_aggregates]:
                 if g_agg not in f_aggregates:
-                    f_aggregates.append(s_agg)
+                    f_aggregates.append(g_agg)
                     f_aggregates_updated = True
 
             if f_aggregates_updated:

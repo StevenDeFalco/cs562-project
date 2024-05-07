@@ -83,13 +83,17 @@ def main():
 
     # Ask if the user wants the resulting table sorted
     num_group_by = len(mf_struct['V'])
-    order_by_ = input(f"\nInput the order by value (0 for none, {num_group_by} for all grouping attributes): ")
-    try:
-        order_by_ = int(order_by_) 
-        order_by_ = num_group_by if order_by_ > num_group_by else order_by_
-        order_by_ = 0 if order_by_ < 0 else order_by_
-    except Exception:
-        order_by_ = 0
+    order_by_ = 0
+    if num_group_by != 0:
+        order_by_ = input(f"\nInput the order by value (0 for none, {num_group_by} for all grouping attributes): ")
+        try:
+            order_by_ = int(order_by_) 
+            order_by_ = num_group_by if order_by_ > num_group_by else order_by_
+            order_by_ = 0 if order_by_ < 0 else order_by_
+        except Exception:
+            order_by_ = 0
+
+    print()
     
     """
     This is the generator code. It should take in the MF structure and generate the code
@@ -304,8 +308,8 @@ def main():
 
 
     newHTable = []
-    # project only the attributes given in the SELECT clause
 
+    # project only the attributes given in the SELECT clause
     for h_row in hTable:
         projected_h_row = {}
         for key, value in h_row.map.items():
@@ -313,6 +317,7 @@ def main():
                 projected_h_row[key] = value 
         newHTable.append(projected_h_row)
     
+    # sort the database by order by value
     if order_by != 0:
         sort_order = groupingVariables[:order_by]
         newHTable.sort(key=lambda x: tuple(x.get(key, '') for key in sort_order))
@@ -361,6 +366,8 @@ if "__main__" == __name__:
     open("_generated.py", "w").write(tmp)
     # Execute the generated code
     subprocess.run(["python", "_generated.py"])
+    # Remove the generated code after execution
+    os.remove("_generated.py")
 
 
 if "__main__" == __name__:
