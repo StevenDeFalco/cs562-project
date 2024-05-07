@@ -1,7 +1,6 @@
 import os
 import psycopg2
 import psycopg2.extras
-import tabulate
 from dotenv import load_dotenv
 
 
@@ -22,5 +21,11 @@ def get_database():
     cur = conn.cursor()
     cur.execute("SELECT * FROM sales")
     column_names = [desc[0] for desc in cur.description]
+    datatypes = [desc[1] for desc in cur.description]
 
-    return cur.fetchall(), column_names
+    column_datatypes = {}
+    for i in range(0, len(column_names)):
+        column_datatypes[column_names[i]] = datatypes[i]
+
+
+    return cur.fetchall(), column_names, column_datatypes

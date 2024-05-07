@@ -3,21 +3,24 @@ from connect import get_database
 from phi import PhiOperator
 import os
 
-def get_file_path():
+def get_query_file_path():
   """Prompts the user for a query file, checks its existence, and returns the path.
 
   Returns:
       The path to the valid query file if it exists, or None otherwise.
   """
+
   while True:
-    filename = input(f"Enter the query file name (in the 'queries' directory)"
+    filename = input(f"Enter the query file name (in the 'queries' directory) ++"
                      "or leave blank to enter query parameters manually: ")
+    
     if filename.strip() != "":
         file_path = os.path.join("queries", filename)  # Construct full path
         if os.path.exists(file_path):
             return file_path
         else:
             print(f"Error: File '{filename}' does not exist in the 'queries' directory.")
+
     else:
         with open('./queries/_tmpQuery.txt', 'w') as f:
             f.write("SELECT ATTRIBUTE(S):\n")
@@ -31,37 +34,49 @@ def get_file_path():
             f.write(v + '\n')
             f_vect = input("Input values of F-vector (comma-separated): ")
             f.write("F-VECT([F]):\n")
-            f.write(f_vect + '\n')
+            if f_vect.strip() != '': 
+              f.write(f_vect + '\n')
             sig = input("Input select conditions (comma-separated): ")
-            sigmas = sig.split(',')
+            sigmas = sig.split(',') if len(sig.strip()) != 0 else []
             f.write("SELECT CONDITION-VECT([σ]):\n")
             for cond in sigmas:
                 f.write(cond.strip() + '\n')
-            g = input("Input having clause: ")
+            g = input("Input having clause (with spaces between different entities): ")
             f.write("HAVING_CONDITION(G):\n")
-            f.write(g)
+            f.write(g)   
         return './queries/_tmpQuery.txt'
 
 
 def main():
+    
+    # Gets the file path for the query input
+    file_path = get_query_file_path()
+
+    # Connects to the database
+    database, columns, column_datatypes = get_database()
+
+
+    # create the mf_struct
+    processing = PhiOperator(file_path)
+    processing.process_mf_struct(columns, column_datatypes)
+    mf_struct = processing.mf_struct
+
+    # remove the tmp file created for inputted query
+    if file_path == './queries/_tmpQuery.txt':
+        os.remove(file_path)
+
+    # Get translation dictionary for database  columns (attribute name --> index)
+    col_names = {}
+    for i, attrib in enumerate(columns):
+        col_names[attrib] = i
+    
     """
     This is the generator code. It should take in the MF structure and generate the code
     needed to run the query. That generated code should be saved to a 
     file (e.g. _generated.py) and then run.
     """
 
-    file_path = get_file_path()
-    processing = PhiOperator(file_path)
-    if file_path == './queries/_tmpQuery.txt':
-        os.remove(file_path)
-    mf_struct = processing.mf_struct
-
     body = """
-    column_names = {}
-    # Get translation dictionary (attribute name --> index)
-    for i, attrib in enumerate(columns):
-        column_names[attrib] = i
-
     
     class H:
         '''Class to define one row in the H table'''
@@ -186,8 +201,7 @@ def main():
             split_cond = cond.split(".")
             if split_cond[0] == str(i):
                 ith_conditions.append(split_cond[1])
-        # e.g. of parsed_condition = (<idx-of-attribute>, <attrib-val>, <operator>)
-        
+        #  e.g. of parsed_condition = (<idx-of-attribute>, <attrib-val>, <operator>)
         parsed_conditions = []
         for cond in ith_conditions:
             if '>' in cond and '=' not in cond:
@@ -216,6 +230,8 @@ def main():
                         token_val = row[column_names[token]]
                         if isinstance(token_val, str):
                             token_val = "'" + token_val + "'"
+                        if isinstance(token_val, datetime.date):
+                            token_val = "'" + str(token_val) + "'"
                         result_tokens.append(str(token_val))
                     except:
                         result_tokens.append(str(token))
@@ -281,12 +297,14 @@ def main():
 
     # Note: The f allows formatting with variables.
     #       Also, note the indentation is preserved.
+
     tmp = f"""
 import os
 import sys
 import psycopg2
 import psycopg2.extras
 import tabulate
+import datetime
 from dotenv import load_dotenv
 from connect import get_database
 
@@ -299,8 +317,10 @@ fVector = {mf_struct["F"]}
 conditions = {mf_struct["sigma"]}
 havingClause = {mf_struct["G"]}
 
+db = {repr(database)}
+column_names = {col_names}
+
 def main():
-    db, columns = get_database()
     {body}
     print(tabulate.tabulate(hTable, headers='keys', tablefmt='grid'))
     
