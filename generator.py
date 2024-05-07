@@ -4,47 +4,58 @@ from phi import PhiOperator
 import os
 
 def get_query_file_path():
-  """Prompts the user for a query file, checks its existence, and returns the path.
+    """Prompts the user for a query file, checks its existence, and returns the path.
 
-  Returns:
-      The path to the valid query file if it exists, or None otherwise.
-  """
+    Returns:
+        The path to the valid query file if it exists, or None otherwise.
+    """
 
-  while True:
-    filename = input(f"Enter the query file name (in the 'queries' directory) ++"
-                     "or leave blank to enter query parameters manually: ")
-    
-    if filename.strip() != "":
-        file_path = os.path.join("queries", filename)  # Construct full path
-        if os.path.exists(file_path):
-            return file_path
+    # prints all names of queries
+    files = os.listdir("./queries")
+    print()
+    for i in range(0, len(files), 2):
+        try:
+            print(f"{files[i]:<30}{files[i+1]}")
+        except IndexError:
+            print(files[i])
+    print()
+
+    while True:
+        filename = input(f"Enter the query file name (in the 'queries' directory) "
+                        "or leave blank to enter query parameters manually: ")
+        
+        if filename.strip() != "":
+            file_path = os.path.join("queries", filename)  # Construct full path
+            if os.path.exists(file_path):
+                return file_path
+            else:
+                print(f"Error: File '{filename}' does not exist in the 'queries' directory.")
+
         else:
-            print(f"Error: File '{filename}' does not exist in the 'queries' directory.")
-
-    else:
-        with open('./queries/_tmpQuery.txt', 'w') as f:
-            f.write("SELECT ATTRIBUTE(S):\n")
-            s = input("Input values for S (comma-separated): ")
-            f.write(s + '\n')
-            n = input("Input number of grouping variables (integer): ")
-            f.write("NUMBER OF GROUPING VARIABLES(n):\n")
-            f.write(n + '\n')
-            v = input("Input Grouping Attributes (comma-separated): ")
-            f.write("GROUPING ATTRIBUTES(V):\n")
-            f.write(v + '\n')
-            f_vect = input("Input values of F-vector (comma-separated): ")
-            f.write("F-VECT([F]):\n")
-            if f_vect.strip() != '': 
-              f.write(f_vect + '\n')
-            sig = input("Input select conditions (comma-separated): ")
-            sigmas = sig.split(',') if len(sig.strip()) != 0 else []
-            f.write("SELECT CONDITION-VECT([σ]):\n")
-            for cond in sigmas:
-                f.write(cond.strip() + '\n')
-            g = input("Input having clause (with spaces between different entities): ")
-            f.write("HAVING_CONDITION(G):\n")
-            f.write(g)   
-        return './queries/_tmpQuery.txt'
+            with open('./queries/_tmpQuery.txt', 'w') as f:
+                f.write("SELECT ATTRIBUTE(S):\n")
+                s = input("Input values for S (comma-separated): ")
+                f.write(s + '\n')
+                n = input("Input number of grouping variables (integer): ")
+                f.write("NUMBER OF GROUPING VARIABLES(n):\n")
+                f.write(n + '\n')
+                v = input("Input Grouping Attributes (comma-separated): ")
+                f.write("GROUPING ATTRIBUTES(V):\n")
+                f.write(v + '\n')
+                f_vect = input("Input values of F-vector (comma-separated): ")
+                f.write("F-VECT([F]):\n")
+                if f_vect.strip() != '': 
+                    f.write(f_vect + '\n')
+                sig = input("Input select conditions (comma-separated): ")
+                sigmas = sig.split(',') if len(sig.strip()) != 0 else []
+                f.write("SELECT CONDITION-VECT([σ]):\n")
+                for cond in sigmas:
+                    f.write(cond.strip() + '\n')
+                g = input("Input having clause (with spaces between different entities): ")
+                f.write("HAVING_CONDITION(G):\n")
+                f.write(g)
+                print()
+            return './queries/_tmpQuery.txt'
 
 
 def main():
@@ -69,6 +80,16 @@ def main():
     col_names = {}
     for i, attrib in enumerate(columns):
         col_names[attrib] = i
+
+    # Ask if the user wants the resulting table sorted
+    num_group_by = len(mf_struct['V'])
+    order_by_ = input(f"\nInput the order by value (0 for none, {num_group_by} for all grouping attributes): ")
+    try:
+        order_by_ = int(order_by_) 
+        order_by_ = num_group_by if order_by_ > num_group_by else order_by_
+        order_by_ = 0 if order_by_ < 0 else order_by_
+    except Exception:
+        order_by_ = 0
     
     """
     This is the generator code. It should take in the MF structure and generate the code
@@ -284,12 +305,18 @@ def main():
 
     newHTable = []
     # project only the attributes given in the SELECT clause
+
     for h_row in hTable:
         projected_h_row = {}
         for key, value in h_row.map.items():
             if key in selectAttributes:
                 projected_h_row[key] = value 
         newHTable.append(projected_h_row)
+    
+    if order_by != 0:
+        sort_order = groupingVariables[:order_by]
+        newHTable.sort(key=lambda x: tuple(x.get(key, '') for key in sort_order))
+
     hTable = newHTable
 
 
@@ -319,6 +346,8 @@ havingClause = {mf_struct["G"]}
 
 db = {repr(database)}
 column_names = {col_names}
+
+order_by = {order_by_}
 
 def main():
     {body}
