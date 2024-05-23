@@ -1,0 +1,1 @@
+# define errors for query parser

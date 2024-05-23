@@ -1,10 +1,7 @@
-# I pledge my honor that I've abided by the Stevens Honor System
-# Steven DeFalco
-# Lucas Hope
 import subprocess
-from connect import get_database
-from phi import PhiOperator
 import os
+from connect import get_database
+from query_parser import QueryParser
 
 def get_query_file_path():
     """Prompts the user for a query file, checks its existence, and returns the path.
@@ -36,7 +33,24 @@ def get_query_file_path():
 
         else:
             with open('./queries/_tmpQuery.txt', 'w') as f:
-                f.write("SELECT ATTRIBUTE(S):\n")
+                #write new input
+                s = input('SELECT ')
+                if s != '':
+                    f.write('SELECT ' + s + '\n')
+                o = input('OVER ')
+                if o != '':
+                    f.write('OVER ' + o + '\n')
+                w = input('WHERE ')
+                if w != '':
+                    f.write('WHERE ' + w + '\n')
+                h = input('HAVING ')
+                if h != '':
+                    f.write('HAVING ' + h + '\n')
+                ob = input('ORDER BY ')
+                if ob != '':
+                    f.write('ORDER BY ' + ob + '\n')
+
+                '''
                 s = input("Input values for S (comma-separated): ")
                 f.write(s + '\n')
                 n = input("Input number of grouping variables (integer): ")
@@ -58,6 +72,7 @@ def get_query_file_path():
                 f.write("HAVING_CONDITION(G):\n")
                 f.write(g)
                 print()
+                '''
             return './queries/_tmpQuery.txt'
 
 
@@ -71,7 +86,7 @@ def main():
 
 
     # create the mf_struct
-    processing = PhiOperator(file_path)
+    processing = QueryParser(file_path)
     processing.process_mf_struct(columns, column_datatypes)
     mf_struct = processing.mf_struct
 
