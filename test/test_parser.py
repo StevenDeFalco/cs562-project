@@ -1,8 +1,9 @@
-
 import pytest
 import tempfile
-from query_parser.parser import Parser, ParsingError
-from connect import get_database
+
+
+from src.query_parser.parser import Parser, ParsingError
+from src.connect import get_database
 
 # define unit tests for the query parser
 # include all edge cases for each clause
@@ -87,6 +88,8 @@ def test_selecterror9(test_query_file):
 
 
 # Queries with OVER errors
+
+# NOTE: NOT going to work now, chnaged 
 empty_over = "select cust over where state='NY'"
 non_number_over = "select prod over x,y where cust = 'Dan"
 
@@ -160,13 +163,69 @@ def test_whereerror9(test_query_file):
 
 
 # Queries with HAVING errors
-bad_group_having = "select cust over 1 where 1.prod = 'Apple' having 1_average_quant >= 100 and 2_avg_quant <= 20"
+bad_aggregate1_having = "select cust over 1 where 1.prod = 'Apple' having 1_average_quant >= 100 and 2_avg_quant <= 20"
+bad_aggregate2_having = "select cust,prod over 2 where 1.cust = 'Dan',2.prod = 'Apple' having 0_quant >= 100"
+bad_aggregate3_having = "select cust,month over 3 where 3.prod = 'Jelly',2.prod = 'Apple' having 2_div_quant <= 20"
+bad_aggregate4_having = "select cust having 0_sum_quant < 10000"
+bad_eval1_having = "SELECT cust HAVING (1+ sum_quant > 7890"
+bad_eval2_having = "Select cust having 7 < > 2"
+not_aggregate1_having = "select prod having day = 2"
 
-@pytest.mark.parametrize('test_query_file', [bad_group_having], indirect=True)
+@pytest.mark.parametrize('test_query_file', [bad_aggregate1_having], indirect=True)
 def test_havingerror1(test_query_file):
     error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'2_avg_quant' cannot be parsed as a HAVING argument"
+    assert error_message == "'1_average_quant' cannot be parsed as a HAVING argument"
 
+@pytest.mark.parametrize('test_query_file', [bad_aggregate2_having], indirect=True)
+def test_havingerror2(test_query_file):
+    error_message = parse_and_catch_error(test_query_file)
+    assert error_message == "'0_quant' cannot be parsed as a HAVING argument"
+
+@pytest.mark.parametrize('test_query_file', [bad_aggregate3_having], indirect=True)
+def test_havingerror3(test_query_file):
+    error_message = parse_and_catch_error(test_query_file)
+    assert error_message == "'2_div_quant' cannot be parsed as a HAVING argument"
+
+@pytest.mark.parametrize('test_query_file', [bad_aggregate4_having], indirect=True)
+def test_havingerror4(test_query_file):
+    error_message = parse_and_catch_error(test_query_file)
+    assert error_message == "'0_sum_quant' cannot be parsed as a HAVING argument"
+
+@pytest.mark.parametrize('test_query_file', [bad_eval1_having], indirect=True)
+def test_havingerror5(test_query_file):
+    error_message = parse_and_catch_error(test_query_file)
+    assert error_message == "HAVING could not be evaluated"
+
+@pytest.mark.parametrize('test_query_file', [bad_eval2_having], indirect=True)
+def test_havingerror6(test_query_file):
+    error_message = parse_and_catch_error(test_query_file)
+    assert error_message == "HAVING could not be evaluated"
+
+@pytest.mark.parametrize('test_query_file', [not_aggregate1_having], indirect=True)
+def test_havingerror7(test_query_file):
+    error_message = parse_and_catch_error(test_query_file)
+    assert error_message == "'day' cannot be parsed as a HAVING argument"
+
+
+# Queries with Order By errors
+num0_orderby = "select cust, prod order by 0"
+numtoohigh_orderby = "select cust,prod,month order by 4"
+notnum_orderby = "select cust,prod order by apple"
+
+@pytest.mark.parametrize('test_query_file', [num0_orderby], indirect=True)
+def test_orderby1(test_query_file):
+    error_message = parse_and_catch_error(test_query_file)
+    assert error_message == "'0' cannot be parsed as an ORDER BY argument"
+
+@pytest.mark.parametrize('test_query_file', [numtoohigh_orderby], indirect=True)
+def test_orderby2(test_query_file):
+    error_message = parse_and_catch_error(test_query_file)
+    assert error_message ==  "'4' cannot be parsed as an ORDER BY argument"
+
+@pytest.mark.parametrize('test_query_file', [notnum_orderby], indirect=True)
+def test_orderby3(test_query_file):
+    error_message = parse_and_catch_error(test_query_file)
+    assert error_message == "'apple' cannot be parsed as an ORDER BY argument"
 
 if __name__ == '__main__':
     pytest.main()

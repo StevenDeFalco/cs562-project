@@ -66,7 +66,7 @@ def is_valid_condition(condition_no_group,column_names,column_datatypes):
             break
     
     if len(condition_split) == 2:
-        left_side = condition_split[0].strip().lower()
+        left_side = condition_split[0].strip()
         right_side = condition_split[1].strip()
         
         if left_side in column_names:
@@ -149,47 +149,55 @@ def is_valid_condition(condition_no_group,column_names,column_datatypes):
     return False
 
 
+''' 
+Check for proper aggregate format and with a valid group, aggregate function, and table column.
+If the return value is false, the function will return a code described below to identify
+the reason that the aggregate was found to be invalid.
 
-def is_valid_aggregate(aggregate, column_names, column_datatypes, number_of_grouping_variables):
-    '''check for proper aggregate format and with usable group, aggregate function, and table column'''
-    #will change it aggregate format changes
-    #should eventually not split at _ 
-
-    '''
     RETURN
-    0 --> split into incorrect length
-    1 --> wrong function or column
-    2 --> incorrect group error 
-    None for valid aggregates
-    '''
-    aggregate = aggregate.lower()
-    aggregate_split = aggregate.split('_')
-    if len(aggregate_split) == 2:
-        if not (aggregate_split[0] in ['avg','min','max','sum'] and 
-                aggregate_split[1] in column_names and 
-                column_datatypes[aggregate_split[1]] in NUMERICAL_OIDs
-                or
-                aggregate_split[0] == 'count' and
-                aggregate_split[1] in column_names):
-            return False, 1
-        return True, None
+        0 --> split into incorrect length
+        1 --> incorrect group error 
+        2 --> incorrect aggregate function
+        3 --> incorrect column name
+        4 --> column name not numerical OIDs
+        None for valid aggregates
+'''
+def is_valid_aggregate(aggregate, column_names, column_datatypes, aggregate_groups):
+    # will change it aggregate format changes
+    #should eventually not split at _
+    split_aggregate = aggregate.split('_') 
+
+    if len(split_aggregate) == 2:
+        if split_aggregate[0] in ['avg','min','max','sum']:
+            if split_aggregate[1] in column_names:
+                if column_datatypes[split_aggregate[1]] in NUMERICAL_OIDs:
+                    return True, None
+                else:
+                    return False, 4
+            else:
+                return False, 3 
+        elif split_aggregate[0] == 'count':
+            if split_aggregate[1] not in column_names:
+                return False, 3   
+        else:
+            return False, 2
         
-    elif len(aggregate_split) == 3:
-        try:
-            group = int(aggregate_split[0])
-            if group > number_of_grouping_variables or group < 1:
-                return False, 2
-        except Exception:
-            return False, 2
-        if group > number_of_grouping_variables or group < 1:
-            return False, 2
-        if not (aggregate_split[1] in ['avg','min','max','sum'] and
-                aggregate_split[2] in column_names and 
-                column_datatypes[aggregate_split[2]] in NUMERICAL_OIDs
-                or
-                aggregate_split[1] == 'count' and
-                aggregate_split[2] in column_names):
+    elif len(split_aggregate) == 3:
+        group = split_aggregate[0]
+        if group not in aggregate_groups:
             return False, 1
-        return True, None
+        if split_aggregate[1] in ['avg','min','max','sum']:
+            if split_aggregate[2] in column_names:
+                if column_datatypes[split_aggregate[2]] in NUMERICAL_OIDs:
+                    return True, None
+                else:
+                    return False, 4
+            else:
+                return False, 3 
+        elif split_aggregate[1] == 'count':
+            if split_aggregate[2] not in column_names:
+                return False, 3   
+        else:
+            return False, 2
         
     return False, 0
