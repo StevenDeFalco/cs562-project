@@ -1,0 +1,5 @@
+select cust, prod, 1_avg_quant, 2_sum_quant
+over 1,2
+where 1.cust = 'Dan', 2.prod = 'Jelly'
+having 1_avg_quant > 0 and 2_sum_quant > 0
+order by 1
