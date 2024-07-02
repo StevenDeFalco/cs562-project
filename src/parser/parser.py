@@ -1,7 +1,8 @@
-from .parser_util import *
-from .parsing_error import ParsingError
+from src.parser.parsing_error import ParsingError
+from src.parser.parser_util import get_keyword_clauses, is_valid_condition, is_valid_aggregate
 
 import re
+
 
 class Parser:
     """Class to perform operations with the Phi Operator and ESQL"""

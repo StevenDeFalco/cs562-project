@@ -1,7 +1,5 @@
-
-from src.connect import get_database
-from src.query_parser.parser import Parser
-import execution_algorithms
+from src.parser.parser import Parser
+import src.execution.execution_algorithms as algorithms
 
 import csv
 from tabulate import tabulate
@@ -20,7 +18,7 @@ def main():
     column_indexes = {}
     for i, attribute in enumerate(columns):
         column_indexes[attribute] = i
-    execution_algorithms.set_datatable_information(datatable, column_indexes)
+    algorithms.set_datatable_information(datatable, column_indexes)
 
     # get the parsed query struct
     process_query = Parser(file_path,columns,column_datatypes)
@@ -35,7 +33,7 @@ def main():
     order_by = query_struct['order_by']
 
 
-    table = execution_algorithms.build_resulting_table(select_attributes,select_grouping_attributes,aggregates,aggregate_groups,conditions,having_clause,order_by)
+    table = algorithms.build_resulting_table(select_attributes,select_grouping_attributes,aggregates,aggregate_groups,conditions,having_clause,order_by)
    
     # Write data to a csv file
     headers = table[0].keys()

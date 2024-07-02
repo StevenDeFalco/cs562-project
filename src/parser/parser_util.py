@@ -1,7 +1,8 @@
+from src.display.parser.parsing_error import ParsingError
 
 import re
 from datetime import datetime
-from .parsing_error import ParsingError
+
 
 # OIDs for datatypes in postgreSQL
 NUMERICAL_OIDs = [21, 23, 20, 1700, 700, 701]
