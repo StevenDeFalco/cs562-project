@@ -19,6 +19,8 @@ def get_database():
 
     conn = psycopg2.connect(host=host, dbname=dbname, user=user, password=password, 
                             port=port, cursor_factory=psycopg2.extras.DictCursor)
+    
+    print(conn)
     cur = conn.cursor()
     cur.execute("SELECT * FROM sales")
     column_names = [desc[0] for desc in cur.description]
@@ -28,5 +30,7 @@ def get_database():
     for i in range(0, len(column_names)):
         column_datatypes[column_names[i]] = datatypes[i]
 
-
+    print(column_names)
     return cur.fetchall(), column_names, column_datatypes
+
+get_database()

@@ -1,7 +1,3 @@
-
-
-
-
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QHBoxLayout, QToolButton, QTextEdit, 
     QMessageBox, QFileDialog, QTabBar, QSizePolicy, QStyle
@@ -9,11 +5,13 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 
-class HomeWindowMethods:
+
+class CentralWidgetUtil:
 
     '''
-    creates the screen that displays the logo when there are no query tabs
+    Logo Screen (no tabs open)
     '''
+
     def create_logo_screen(self):
         logo_widget = QWidget()
         layout = QVBoxLayout(logo_widget)
@@ -29,8 +27,9 @@ class HomeWindowMethods:
         ))
         return logo_widget
     
+
     '''
-    creates a new 
+    Tab Operations
     '''
 
     def new_query_tab(self):
@@ -45,6 +44,7 @@ class HomeWindowMethods:
         self.add_close_button(new_index)
         self.set_initial_zoom(new_editor)
 
+    
     def add_close_button(self, index):
         tab = QWidget()
         tabLayout = QHBoxLayout()
@@ -75,70 +75,91 @@ class HomeWindowMethods:
             
         self.tabWidget.removeTab(index)
         if self.tabWidget.count() == 0:
-            self.stackedWidget.setCurrentWidget(self.logo_screen)
+            self.stackedCentralWidget.setCurrentWidget(self.logo_screen)
         else:
             if index < self.tabWidget.count():
                 self.tabWidget.setCurrentIndex(index)
             else:
                 self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
 
-    def set_initial_zoom(self, editor):
-        current_font = editor.font()
-        current_font.setPointSize(current_font.pointSize() + 8)
-        editor.setFont(current_font)
+    
+    '''
+    File Operations
+    '''
 
     def open_file(self):
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Text Files (*.txt);;All Files (*)", options=options)
-        if fileName:
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Text Files (*.txt);;All Files (*)", options=options)
+        if file_name:
             try:
-                with open(fileName, 'r') as file:
+                with open(file_name, 'r') as file:
                     text = file.read()
                     self.new_query_tab()
                     current_editor = self.tabWidget.currentWidget()
                     current_editor.setText(text)
-                    self.tabWidget.setTabText(self.tabWidget.currentIndex(), fileName)
+                    self.tabWidget.setTabText(self.tabWidget.currentIndex(), file_name)
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Could not open file: {e}")
 
     def save_file(self):
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getSaveFileName(self, "Save File", "", "Text Files (*.txt);;All Files (*)", options=options)
-        if fileName:
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save File", "", "Text Files (*.txt);;All Files (*)", options=options)
+        if file_name:
             try:
                 current_editor = self.tabWidget.currentWidget()
-                with open(fileName, 'w') as file:
+                with open(file_name, 'w') as file:
                     file.write(current_editor.toPlainText())
-                self.tabWidget.setTabText(self.tabWidget.currentIndex(), fileName)
+                self.tabWidget.setTabText(self.tabWidget.currentIndex(), file_name)
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Could not save file: {e}")
 
-    def create_import_table(self):
-        pass
 
-    def about(self):
-        QMessageBox.about(self, "About", "This is a simple text editor example created with PyQt5.")
+    
+    ''' 
+    Text Editor Operations 
+    '''
 
     def undo_action(self):
-        self.tabWidget.currentWidget().undo()
+        current_editor = self.tabWidget.currentWidget()
+        if isinstance(current_editor, QTextEdit):
+            self.tabWidget.currentWidget().undo()
 
     def redo_action(self):
-        self.tabWidget.currentWidget().redo()
+        current_editor = self.tabWidget.currentWidget()
+        if isinstance(current_editor, QTextEdit):                            
+            self.tabWidget.currentWidget().redo()
 
     def copy_action(self):
-        self.tabWidget.currentWidget().copy()
+        current_editor = self.tabWidget.currentWidget()
+        if isinstance(current_editor, QTextEdit):
+            self.tabWidget.currentWidget().copy()
 
     def paste_action(self):
-        self.tabWidget.currentWidget().paste()
+        current_editor = self.tabWidget.currentWidget()
+        if isinstance(current_editor, QTextEdit):
+            self.tabWidget.currentWidget().paste()
+
+    
+
+    ''' 
+    Text Editor Font Size 
+    '''
+
+    def set_initial_zoom(self, editor):
+        current_font = editor.font()
+        current_font.setPointSize(current_font.pointSize() + 8)
+        editor.setFont(current_font)
 
     def zoom_in(self):
         current_editor = self.tabWidget.currentWidget()
-        current_font = current_editor.font()
-        current_font.setPointSize(current_font.pointSize() + 2)
-        current_editor.setFont(current_font)
+        if isinstance(current_editor, QTextEdit):
+            current_font = current_editor.font()
+            current_font.setPointSize(current_font.pointSize() + 1)
+            current_editor.setFont(current_font)
 
     def zoom_out(self):
         current_editor = self.tabWidget.currentWidget()
-        current_font = current_editor.font()
-        current_font.setPointSize(current_font.pointSize() - 2)
-        current_editor.setFont(current_font)
+        if isinstance(current_editor, QTextEdit):
+            current_font = current_editor.font()
+            current_font.setPointSize(current_font.pointSize() - 1)
+            current_editor.setFont(current_font)

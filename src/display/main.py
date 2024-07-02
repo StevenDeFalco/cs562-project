@@ -1,20 +1,22 @@
+from src.display.main_window_util import MainWindowUtil
+from src.display.stylesheets import darkmode_stylesheet
+
 import sys
 
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtCore import Qt, QDir
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QAction, QTabWidget, QVBoxLayout, QWidget, 
-    QListWidget, QPushButton, QHBoxLayout, QSizePolicy, QMenuBar, QStackedWidget
+    QApplication, QMainWindow, QAction, QTabWidget, QVBoxLayout, QWidget, QMenu,
+    QListWidget, QPushButton, QHBoxLayout, QSizePolicy, QMenuBar, QStackedWidget, QMessageBox
 )
 
-from stylesheets import *
-from home_window_methods import HomeWindowMethods
 
-class HomeWindow(QMainWindow, HomeWindowMethods):
+class MainWindow(QMainWindow, MainWindowUtil):
     def __init__(self):
         super().__init__() 
         
         self.new_query_counter = 1
-        self.background_image = '../../public/images/home_icon'
+        self.background_image = 'public/images/home_icon'
         
         self.initHomeWindow()
         self.showLayout()
@@ -48,15 +50,15 @@ class HomeWindow(QMainWindow, HomeWindowMethods):
     
         '''
         Left Side Panel 
-            - 'Import/Create Table' and 'New Query' buttons to the top left
+            - 'Import Table' and 'New Query' buttons to the top left
             - List to display the tables
         '''
         
         self.leftSidePanel = QVBoxLayout()
         self.leftSidePanel.setSpacing(10)
         
-        newTableButton = QPushButton("Create/Import Table")
-        newTableButton.clicked.connect(self.create_import_table)
+        newTableButton = QPushButton("Import Table")
+        newTableButton.clicked.connect(self.create_new_table_window)
        
         newQueryButton = QPushButton("New Query")
         newQueryButton.clicked.connect(self.new_query_tab)
@@ -71,9 +73,18 @@ class HomeWindow(QMainWindow, HomeWindowMethods):
 
         self.tablesList = QListWidget()
         self.tablesList.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Expanding)
+        self.tablesList.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tablesList.customContextMenuRequested.connect(self.show_table_menu)
+        self.tablesList.setSelectionMode(QListWidget.SingleSelection)
         self.leftSidePanel.addWidget(self.tablesList, 1)
 
-        
+        table_list_font = QFont()
+        table_list_font.setPointSize(14)  
+        self.tablesList.setFont(table_list_font)
+
+        self.load_tables_list()
+
+
         '''
         Menu Bar
             - File: Actions for file management
@@ -147,12 +158,13 @@ class HomeWindow(QMainWindow, HomeWindowMethods):
         mainLayout.addLayout(self.leftSidePanel)
         mainLayout.addWidget(self.stackedCentralWidget,stretch=4)
 
+
     
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setApplicationName("ExtendedSQL")
     app.setApplicationDisplayName("ExtendedSQL")
-    mainWin = HomeWindow()
-    mainWin.show()
+    mainWindow = MainWindow()
+    mainWindow.show()
     sys.exit(app.exec_())
 
