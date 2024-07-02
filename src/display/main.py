@@ -35,6 +35,7 @@ class MainWindow(QMainWindow, MainWindowUtil):
             - defaults to a screen with a logo
             - tabs can be added to with a text editor for writing queries
             - bottom panel for execution output
+            - execution button on panel
         '''
 
         self.logo_screen = self.create_logo_screen()
@@ -52,6 +53,19 @@ class MainWindow(QMainWindow, MainWindowUtil):
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 0)
         self.splitter.setSizes([500, 250])
+
+        # Create the execute button
+        self.execute_button = QPushButton("Execute")
+        self.execute_button.clicked.connect(self.execute_button_clicked)
+
+        # Create a container widget and layout for the button
+        self.execute_button_container = QWidget()
+        self.execute_button_layout = QVBoxLayout()
+        self.execute_button_layout.addWidget(self.execute_button)
+        self.execute_button_layout.addStretch(1)  # Add stretch to push the button to the top
+        self.execute_button_container.setLayout(self.execute_button_layout)
+
+        self.splitter.addWidget(self.execute_button_container)
 
         self.stackedCentralWidget= QStackedWidget()
         self.stackedCentralWidget.addWidget(self.logo_screen)

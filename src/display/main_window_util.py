@@ -14,6 +14,10 @@ class MainWindowUtil(CentralWidgetUtil,SidePanelUtil):
     def new_table_window_closed_action(self):
         self.load_tables_list()
 
+    def execute_button_clicked(self):
+        #TODO
+        print("Execute button clicked")
+
     def about(self):
         QMessageBox.about(self, "About", "")
 
