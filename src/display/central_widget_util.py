@@ -28,6 +28,30 @@ class CentralWidgetUtil:
         return logo_widget
     
 
+    ''' 
+    Output Screen (bottom panel)
+    '''
+
+    def create_execution_output_screen(self):
+        execution_output_screen = QWidget()
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel("Execution Output"))
+        self.output_display = QTextEdit()
+        self.output_display.setReadOnly(True)
+        layout.addWidget(self.output_display)
+        execution_output_screen.setLayout(layout)
+        return execution_output_screen
+    
+    def update_execution_output(self, text):
+        self.output_display.append(text)
+
+    def toggle_output_screen(self):
+        if self.tabWidget.count() == 0:
+            self.stackedCentralWidget.setCurrentWidget(self.logo_screen)
+        else:
+            self.stackedCentralWidget.setCurrentWidget(self.splitter)
+    
+
     '''
     Tab Operations
     '''
@@ -81,6 +105,8 @@ class CentralWidgetUtil:
                 self.tabWidget.setCurrentIndex(index)
             else:
                 self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
+
+        self.toggle_output_screen()
 
     
     '''
@@ -147,7 +173,7 @@ class CentralWidgetUtil:
 
     def set_initial_zoom(self, editor):
         current_font = editor.font()
-        current_font.setPointSize(current_font.pointSize() + 8)
+        current_font.setPointSize(current_font.pointSize() + 4)
         editor.setFont(current_font)
 
     def zoom_in(self):

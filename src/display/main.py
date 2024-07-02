@@ -6,8 +6,8 @@ import sys
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QDir
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QAction, QTabWidget, QVBoxLayout, QWidget, QMenu,
-    QListWidget, QPushButton, QHBoxLayout, QSizePolicy, QMenuBar, QStackedWidget, QMessageBox
+    QApplication, QMainWindow, QAction, QTabWidget, QVBoxLayout, QWidget, QLabel,
+    QListWidget, QPushButton, QHBoxLayout, QSizePolicy, QMenuBar, QStackedWidget, QSplitter
 )
 
 
@@ -34,18 +34,32 @@ class MainWindow(QMainWindow, MainWindowUtil):
         Central Widget 
             - defaults to a screen with a logo
             - tabs can be added to with a text editor for writing queries
+            - bottom panel for execution output
         '''
 
         self.logo_screen = self.create_logo_screen()
 
         self.tabWidget = QTabWidget()
         self.tabWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.tabWidget.tabBar().tabCloseRequested.connect(self.close_tab_with_prompt)
+        self.tabWidget.currentChanged.connect(self.toggle_output_screen)
+
+        self.execution_output_screen = self.create_execution_output_screen()
+
+        self.splitter = QSplitter(Qt.Vertical)
+        self.splitter.addWidget(self.tabWidget)
+        self.splitter.addWidget(self.execution_output_screen)
+        self.splitter.setStretchFactor(0, 1)
+        self.splitter.setStretchFactor(1, 0)
+        self.splitter.setSizes([500, 250])
 
         self.stackedCentralWidget= QStackedWidget()
         self.stackedCentralWidget.addWidget(self.logo_screen)
-        self.stackedCentralWidget.addWidget(self.tabWidget)
+        self.stackedCentralWidget.addWidget(self.splitter)
         self.stackedCentralWidget.setCurrentWidget(self.logo_screen)
-        self.stackedCentralWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)       
+        self.stackedCentralWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)      
+
+
 
     
         '''
@@ -154,9 +168,9 @@ class MainWindow(QMainWindow, MainWindowUtil):
 
 
     def showLayout(self):
-        mainLayout = QHBoxLayout(self.mainWidget)
-        mainLayout.addLayout(self.leftSidePanel)
-        mainLayout.addWidget(self.stackedCentralWidget,stretch=4)
+        main_layout = QHBoxLayout(self.mainWidget)
+        main_layout.addLayout(self.leftSidePanel)
+        main_layout.addWidget(self.stackedCentralWidget,stretch=4)
 
 
     
