@@ -1,7 +1,7 @@
-from src.display.parser.error import ParsingError
-
 import re
-from datetime import datetime
+import datetime as dt
+
+from src.parser.error import ParsingError
 
 
 # OIDs for datatypes in postgreSQL
@@ -142,7 +142,7 @@ def is_valid_condition(condition_no_group,column_names,column_datatypes):
                     right_side = re.sub(pattern, "'2022-1-1'", right_side)
 
                 try:
-                    date = datetime.strptime(right_side, '%Y-%m-%d')
+                    date = dt.strptime(right_side, '%Y-%m-%d')
                     return True
                 except:
                     return False

@@ -5,8 +5,11 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 
+import src.execution.execute as exe
+from src.parser.error import ParsingError
 
-class CentralWidgetUtil:
+
+class CentralWidgetActions:
 
     '''
     Logo Screen (no tabs open)
@@ -138,6 +141,26 @@ class CentralWidgetUtil:
                 self.tabWidget.setTabText(self.tabWidget.currentIndex(), file_name)
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Could not save file: {e}")
+
+
+    '''
+    Query Execution and Output Display
+    '''
+
+    def execute(self):
+        tab_index = self.tabWidget.currentIndex()
+        if tab_index == -1:
+            return
+        else:
+            tab_text = self.tabWidget.tabText(tab_index)
+            try:
+                execution_result = exe.execute(tab_text)
+                self.update_execution_output(execution_result)
+            except ParsingError as e:
+                self.update_execution_output(str(e))
+
+    def update_execution_output(self, text):
+        self.output_display.setPlainText(text)
 
 
     

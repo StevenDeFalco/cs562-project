@@ -8,14 +8,7 @@ def set_datatable_information(datatable,column_indexes):
     global DATATABLE, COLUMN_INDEXES
     DATATABLE = datatable
     COLUMN_INDEXES = column_indexes
-
-
-def build_resulting_table(select_attributes,select_grouping_attributes,aggregates,aggregate_groups,conditions,having_clause,order_by):
-    hTable = build_hTable(select_grouping_attributes,aggregates,aggregate_groups,conditions,having_clause)
-    select_table = project_select_attributes(hTable,select_attributes)
-    ordered_table = order_by_sort(select_table,order_by,select_grouping_attributes) 
-    return ordered_table
-
+    
 
 ''' 
 Each row of the H Table. The H Table holds 1 H class for each distinct 

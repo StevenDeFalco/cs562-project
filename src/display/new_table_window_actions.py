@@ -1,5 +1,3 @@
-from src.connect.postgres import import_table
-
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
@@ -7,8 +5,10 @@ from PyQt5.QtWidgets import (
     QPushButton, QMessageBox, QShortcut
 )
 
+import src.connect.postgres as postgres
 
-class NewTableWindowUtil:
+
+class NewTableWindowActions:
 
     '''
     Import from Postgres
@@ -73,7 +73,7 @@ class NewTableWindowUtil:
 
     def import_postgres_table(self):
         try:
-            import_table(self.table_input.text(),self.username_input.text(),self.password_input.text(),self.host_input.text(),self.port_input.text())
+            postgres.import_table(self.table_input.text(),self.username_input.text(),self.password_input.text(),self.host_input.text(),self.port_input.text())
             self.close()
         except Exception as e:
             QMessageBox.information(self, "ERROR", str(e))
