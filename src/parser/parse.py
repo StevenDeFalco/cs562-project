@@ -1,6 +1,7 @@
 import re
 
 import src.parser.util as util
+import src.parser.table as table
 from src.parser.error import ParsingError
 
 
@@ -22,9 +23,9 @@ ORDER BY 2,3,1
 '''
 
 
-def get_processed_query(query,columns,column_datatypes): 
+def get_processed_query(query): 
     prepared_query = prepare_text(query)
-    query_struct = build_query_struct(prepared_query,columns,column_datatypes)
+    query_struct = build_query_struct(prepared_query)
     return query_struct
 
 
@@ -64,16 +65,36 @@ Builds a struct of the important information in the query.
 Validates the information in the query to reduce errors when running the generated algorithm. 
 '''
 
-def build_query_struct(query, columns, column_datatypes):
+def build_query_struct(query):
     struct = {}
 
     # keyword_clauses contains the clause of each keyword at the same index as the keyword
-    keywords = ['select', 'over', 'where', 'having', 'order by']
+    keywords = ['select', 'from', 'over', 'where', 'having', 'order by']
     keyword_clauses = util.get_keyword_clauses(query, keywords)
 
 
+    # Get the table from the FROM clause
+    table_name = keyword_clauses[1].strip()
+    if table_name == '':
+        raise ParsingError('Query must contain a FROM clause')
+    
+    datatable,columns,column_datatypes = table.get_table(table_name)
+    if datatable == None:
+        if columns == False:
+            raise ParsingError(f"Table '{table_name}' does not exist ")
+        elif columns == True:
+            raise ParsingError(f"Information for table '{table_name}' has been lost. Please delete the table and import it again")
+        
+    column_indexes = {}
+    for index, name in enumerate(columns):
+        column_indexes[name] = index
+        
+    struct['datatable'] = datatable
+    struct['column_indexes'] = column_indexes
+
+
     # Process OVER clause to get the list of grouping variables
-    aggregate_groups = keyword_clauses[1]
+    aggregate_groups = keyword_clauses[2]
 
     split_aggregate_groups = aggregate_groups.split(",")
     for group in [group.strip() for group in split_aggregate_groups]:
@@ -112,7 +133,7 @@ def build_query_struct(query, columns, column_datatypes):
 
 
     # Check conditions in the WHERE clause
-    conditions = keyword_clauses[2]
+    conditions = keyword_clauses[3]
     
     if conditions.strip() != '':
         conditions_list = conditions.split(',')
@@ -134,7 +155,7 @@ def build_query_struct(query, columns, column_datatypes):
 
 
     # Process HAVING clause to make sure it will evaluate without error
-    having_clause = keyword_clauses[3]
+    having_clause = keyword_clauses[4]
     having_aggregates = []
 
     if having_clause.strip() != '':
@@ -172,7 +193,7 @@ def build_query_struct(query, columns, column_datatypes):
 
 
     # Order by is a numbes from 1 up to number of grouping attributes in the select clause
-    order_by = keyword_clauses[4]
+    order_by = keyword_clauses[5]
     number_of_select_arguments_list = [str(select_argument) for select_argument in range(0, number_of_select_arguments + 1)]
 
     if order_by in number_of_select_arguments_list:

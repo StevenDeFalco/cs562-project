@@ -49,7 +49,7 @@ def get_keyword_clauses(query, keywords):
         raise ParsingError(f"No {previous_keyword.strip().upper()} argument found")
     keyword_clauses.append(clause)
 
-    for i in range(0, 5):
+    for i in range(0, len(keywords)):
         if keyword_indices[i] == -1:
             keyword_clauses[i:i] = ['']
         

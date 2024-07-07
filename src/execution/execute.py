@@ -11,25 +11,7 @@ TABLES_DIRECTORY_PATH = '.tables'
 
 def execute(query):
 
-
-    ###temp###
-    df = pd.read_csv(os.path.join(TABLES_DIRECTORY_PATH, 'sales/table'), header=None)
-    table = df.values.tolist()
-
-    df = pd.read_csv(os.path.join(TABLES_DIRECTORY_PATH, 'sales/column_datatypes'), header=None)
-    column_datatypes = dict(zip(df[0], df[1]))
-    
-    df = pd.read_csv(os.path.join(TABLES_DIRECTORY_PATH, 'sales/columns'), header=None)
-    columns = df[0].tolist()
-    ##########
-
-    column_indexes = {}
-    for index, name in enumerate(columns):
-        column_indexes[name] = index
-    
-    algorithms.set_datatable_information(table,column_indexes)
-
-    processed_query = parse.get_processed_query(query,columns,column_datatypes)
+    processed_query = parse.get_processed_query(query)
 
     select_attributes = processed_query['select_clause']
     select_grouping_attributes = processed_query['select_grouping_attributes']
@@ -39,9 +21,13 @@ def execute(query):
     aggregates = processed_query['aggregates']
     order_by = processed_query['order_by']
 
+    datatable = processed_query['datatable']
+    column_indexes = processed_query['column_indexes']
+
+
+    algorithms.set_datatable_information(datatable,column_indexes)
 
     hTable = algorithms.build_hTable(select_grouping_attributes,aggregates,aggregate_groups,conditions,having_clause)
-   
     select_table = algorithms.project_select_attributes(hTable,select_attributes)
     table = algorithms.order_by_sort(select_table,order_by,select_grouping_attributes) 
 

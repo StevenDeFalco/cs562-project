@@ -32,9 +32,9 @@ def import_table(table, username,password,host,port):
     if not os.path.isdir(TABLES_DIRECTORY_PATH):
         os.mkdir(TABLES_DIRECTORY_PATH)
 
-    new_table_dir = os.path.join(TABLES_DIRECTORY_PATH,table)
+    new_table_dir = os.path.join(TABLES_DIRECTORY_PATH,table.lower())
     if os.path.isdir(new_table_dir):
-        raise Exception("Table with the name " + table + " already exists. Delete the current " + table + " table or change the name in PostgreSQL.")
+        raise Exception("Table with the name " + table.lower() + " already exists. Delete the current " + table.lower() + " table or change the name in PostgreSQL.")
     
     os.mkdir(new_table_dir)
 
