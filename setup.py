@@ -18,7 +18,7 @@ setup(
     },
     author='Lucas Hope',
     author_email='lucasfhope@icloud.com',
-    description='An interface to use an extention of SQL, which can be used for OLAP purposes.',
+    description='An interface to use a new query language, which can be used for OLAP purposes',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/lucasfhope/ExtendedSQL.git',

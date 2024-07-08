@@ -9,15 +9,15 @@ TABLES_DIRECTORY_PATH = '.tables'
 def import_table(table, username,password,host,port):
     
     try:
-        print(host)
-        print(username)
-        print(password)
-        print(port)
-        conn = psycopg2.connect(host=host, dbname='postgres', user=username, password=password, 
-                            port=port, cursor_factory=psycopg2.extras.DictCursor)
-        print(conn)
+        conn = psycopg2.connect(
+            host=host,
+            dbname='postgres',
+            user=username,
+            password=password, 
+            port=port,
+            cursor_factory=psycopg2.extras.DictCursor)
     except Exception:
-        raise Exception("Unable to import table from PostgreSQL. Ensure the Table name, Username, Password, Host, and Port inputs are correct")
+        raise Exception("Unable to import table from PostgreSQL. Ensure that PostgreSQL is currently running and the table name, Username, Password, Host, and Port inputs are correct")
     
     cur = conn.cursor()
     cur.execute("SELECT * FROM " + table)
