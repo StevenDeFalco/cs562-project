@@ -1,4 +1,4 @@
-import sys
+import os
 
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt
@@ -21,7 +21,7 @@ class MainWindow(QMainWindow,CentralWidgetActions,SidePanelActions):
         super().__init__() 
         
         self.new_query_counter = 1
-        self.background_image = 'assets/images/home_icon'
+        self.background_image = os.path.join('assets', 'images', 'home_icon.png')
         
         self.initHomeWindow()
         self.showLayout()

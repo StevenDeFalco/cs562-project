@@ -10,7 +10,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setApplicationName("ExtendedSQL")
     app.setApplicationDisplayName("ExtendedSQL")
-
+    
     if sys.platform == 'darwin':
         from Foundation import NSBundle
         bundle = NSBundle.mainBundle()

@@ -1,3 +1,5 @@
+import os
+
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QHBoxLayout, QToolButton, QTextEdit, 
     QMessageBox, QFileDialog, QTabBar, QSizePolicy, QStyle
@@ -22,12 +24,15 @@ class CentralWidgetActions:
         image_label.setFixedSize(450, 450)
         image_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         layout.addWidget(image_label, alignment=Qt.AlignCenter)
-        pixmap = QPixmap(self.background_image)
-        image_label.setPixmap(pixmap.scaled(
-            image_label.size(),
-            Qt.KeepAspectRatio,
-            Qt.SmoothTransformation
-        ))
+        
+        if os.path.exists(self.background_image):
+            pixmap = QPixmap(self.background_image)
+            image_label.setPixmap(pixmap.scaled(
+                image_label.size(),
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation
+            ))
+        
         return logo_widget
     
 
