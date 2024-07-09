@@ -4,7 +4,6 @@ packaging==23.0
 pluggy==1.0.0
 psycopg2==2.9.5
 PyQt5==5.15.10
-python-dotenv==1.0.0
 pandas==2.2.2
 pyobjc==10.3.1
 tabulate==0.9.0
