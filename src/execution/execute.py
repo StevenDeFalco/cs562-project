@@ -1,7 +1,6 @@
 import os
 import csv
 import pandas as pd
-import tabulate as tb
 
 import src.parser.parse as parse
 import src.execution.algorithms as algorithms
@@ -23,8 +22,12 @@ def execute(query):
     df = pd.read_csv(os.path.join(TABLES_DIRECTORY_PATH, 'sales/columns'), header=None)
     columns = df[0].tolist()
     ##########
-    
 
+    column_indexes = {}
+    for index, name in enumerate(columns):
+        column_indexes[name] = index
+    
+    algorithms.set_datatable_information(table,column_indexes)
 
     processed_query = parse.get_processed_query(query,columns,column_datatypes)
 
@@ -38,8 +41,12 @@ def execute(query):
 
 
     hTable = algorithms.build_hTable(select_grouping_attributes,aggregates,aggregate_groups,conditions,having_clause)
+   
     select_table = algorithms.project_select_attributes(hTable,select_attributes)
     table = algorithms.order_by_sort(select_table,order_by,select_grouping_attributes) 
+
+
+    return table
 
     '''
     # Write data to a csv file

@@ -1,11 +1,12 @@
 import os
+import tabulate as tb
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QHBoxLayout, QToolButton, QTextEdit, 
     QMessageBox, QFileDialog, QTabBar, QSizePolicy, QStyle
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QFont
 
 import src.execution.execute as exe
 from src.parser.error import ParsingError
@@ -46,6 +47,9 @@ class CentralWidgetActions:
         layout.addWidget(QLabel("Execution Output"))
         self.output_display = QTextEdit()
         self.output_display.setReadOnly(True)
+        # Set monospaced font
+        monospaced_font = QFont("Courier New", 14)
+        self.output_display.setFont(monospaced_font)
         layout.addWidget(self.output_display)
         execution_output_screen.setLayout(layout)
         return execution_output_screen
@@ -58,6 +62,27 @@ class CentralWidgetActions:
             self.stackedCentralWidget.setCurrentWidget(self.logo_screen)
         else:
             self.stackedCentralWidget.setCurrentWidget(self.splitter)
+
+
+    '''
+    Query Execution and Output Display
+    '''
+
+    def execute(self):
+        tab_index = self.tabWidget.currentIndex()
+        if tab_index == -1:
+            return
+        else:
+            query_text = self.tabWidget.currentWidget().toPlainText()
+            try:
+                result = exe.execute(query_text)
+                table = tb.tabulate(result, headers="keys", tablefmt="grid")
+                self.update_execution_output(table)
+            except ParsingError as e:
+                self.update_execution_output(str(e))
+
+    def update_execution_output(self, output):
+        self.output_display.setPlainText(output)
     
 
     '''
@@ -146,27 +171,6 @@ class CentralWidgetActions:
                 self.tabWidget.setTabText(self.tabWidget.currentIndex(), file_name)
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Could not save file: {e}")
-
-
-    '''
-    Query Execution and Output Display
-    '''
-
-    def execute(self):
-        tab_index = self.tabWidget.currentIndex()
-        if tab_index == -1:
-            return
-        else:
-            tab_text = self.tabWidget.tabText(tab_index)
-            try:
-                execution_result = exe.execute(tab_text)
-                self.update_execution_output(execution_result)
-            except ParsingError as e:
-                self.update_execution_output(str(e))
-
-    def update_execution_output(self, text):
-        self.output_display.setPlainText(text)
-
 
     
     ''' 

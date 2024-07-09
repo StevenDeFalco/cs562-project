@@ -78,7 +78,7 @@ def build_query_struct(query, columns, column_datatypes):
     split_aggregate_groups = aggregate_groups.split(",")
     for group in [group.strip() for group in split_aggregate_groups]:
         if len(group.split(' ')) != 1:
-            raise error.ParsingError(f"'{group}' could not be parsed as an OVER group")
+            raise ParsingError(f"'{group}' could not be parsed as an OVER group")
 
     struct['aggregate_groups'] = aggregate_groups
 
