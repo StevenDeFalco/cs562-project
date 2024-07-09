@@ -6,7 +6,7 @@ ExntededSQL is an interface designed for the utilization of a new query language
 
 The new query language solves the biggest issue with SQL -- the inibility to compute aggregate functions outside of the grouping varaibles. ESQL is designed to be able to include mutiple aggregate queries for the five main aggregate functions (sum,avg,min,max,count), without the need of nested subqueries and repetitive selection, grouping, and aggregation.
 
-This query language was based off of the SQL entention proposed in the two papers that can be found in `/assets/docs`, namely [MFQueries](/assets/docs/MFQueries.pdf) and [Ad-Hoc OLAP Query Processing](/assets/docs/Ad-Hoc_OLAP_Query_Processing.pdf). They propose a concept of the Phi Operator in relational agebra and the basic syntax of the language, as well as the algorithm used to compute the resulting relation. Read the article to learn more about the theory behind the query language.
+This query language was based off of the SQL entention proposed in the two papers that can be found in `/assets/docs`, namely [MFQueries](/assets/docs/MFQueries.pdf) and [Ad-Hoc OLAP Query Processing](/assets/docs/Ad-Hoc_OLAP_Query_Processing.pdf). They propose a concept of the Phi Operator in relational agebra and the basic syntax of the language, as well as the algorithm used to compute the resulting relation. Read the articles to learn more about the theory behind the query language.
 
 This query language is utilized best when being used for OLAP (Online Analytical Processing) purposes and should be avoided if transactions are needed.
 
