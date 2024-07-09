@@ -160,7 +160,7 @@ def build_query_struct(query):
 
     if having_clause.strip() != '':
         having_clause_no_symbols = having_clause
-        math_symbols = ['+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '>', '=', '<']
+        math_symbols = ['+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '>', '=', '<', '^']
         logic_operators = ['and', 'or', 'not']
         for symbol in math_symbols:
             while symbol in having_clause_no_symbols:
