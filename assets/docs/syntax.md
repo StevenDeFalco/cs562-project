@@ -2,7 +2,7 @@
 
 This document contains information about ExtendedSQL queries. 
 
-I will be providing examples as if I was writing a queries for the 'sales' table. If you would like to import the sales table into the application, follow the instructions that can be found in [/assets/load_sales_table.sql](../load_sales_table.sql). At the very least, I recommend familiarizing yourself with the structure of the table to better understand the examples provided.
+I will be providing examples as if I was writing a queries for the 'sales' table. If you would like to import the sales table into the application, follow the instructions that can be found in [/assets/load_sales_table.sql](../load_sales_table.sql). At the very least, it is recommended that you  familiarize yourself with the structure of the table to better understand the examples provided.
 
 ## Table of Contents
 
@@ -70,6 +70,11 @@ Remember that the group names are not limited to just numbers. The following is 
 
 ## WHERE
 
+The WHERE clause determines which rows in the original table will be used for computing the aggregates for each paricular group defined in the OVER clause. A well written ESQL query will have where conditions defined for each of the groups in the OVER clause. If there isn't conditions for each group, there is no reason for defining the group in the first place.
+
+Currenly, the WHERE clause is made up of stand alone conditions seperated by commas. Logic operators (and,or,not) cannot currently be used in teh WHERE clause. Each condition starts with a group name with a table column appended to it using dot notation (i.e. `1.cust`). There must then be a comparison operator that compares to a value of your choosing. Be sure to use a value that can be compared to the data type of the column. If you would like the product of group `1` to be `Apple` and the customer of group `2` to be `Dan`, you would write:
+
+`WHERE 1.prod = 'Apple', 2.cust = 'Dan'`
 
 
 ## HAVING
