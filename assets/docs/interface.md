@@ -42,5 +42,11 @@ When a query can be parsed and executes, there resulting table will be displayed
 
 ## Table Panel
 
+The table panel to the left of the window displays all of the tables that have been imported into the project. Table information is stored in `.tables`, so leave this directory alone.
+
+## Tables
+
+Each table that is improted into the project is loaded from `.tables` upon execution of ExtendedSQL. To delete a table, right click on the name of the table and select `Delete`. This will remove the table from the panel and the `.tables` directory. `Get Info` currently does not do anything.
+
 ### New Table
 
