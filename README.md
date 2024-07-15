@@ -54,8 +54,12 @@ pip install .
 extendedsql
 ```
 
+
 ## Interface
 
-## Syntax
+Refer to the [documentation](assets/docs/interface.md) on the ExtendedSQL interface for information on how to use the application.
 
 
+## Query Syntax
+
+Refer to the [documentation](assets/docs/syntax.md) on the ExtendedSQL query syntax for information on writing a ESQL query.

@@ -6,6 +6,13 @@ This documentation is intended to help users naviagate the interface and allows 
 
 
 ## Table of Contents
+- [Query Panel](#query-panel)
+    - [Query Tabs](#query-tabs)
+    - [Output Screen](#output-screen)
+    - [Text Editor Options](#text-editor-options)
+- [Table Panel](#table-panel)
+    - [Tables](#tables)
+    - [New Table](#new-table)
 
 
 ## Query Panel
@@ -26,7 +33,7 @@ On the menu panel at the top of the screen, under `File`, there is the option to
 
 ### Output Screen
 
-The output screen will be open whenever a query tab is open. The screen will show the output of a query execution.
+The output screen will be open whenever a query tab is open. The screen can be moved vertically to allow for more space to either to view the output or the query that is being written. The screen will show the output of a query execution.
 
 To execute a query, navigate to the menu panel and click `Execute` under `Run`. You can also click `Execute` on the top right of the output panel.
 
@@ -36,17 +43,32 @@ When a query can be parsed and executes, there resulting table will be displayed
 
 ### Text Editor Options
 
-...
+Common text editor functionality are accessible for the text editor on the query tabs. These include:
 
+- Undo (`Ctrl Z`)
+- Redo (`Ctrl Y`)
+- Copy (`Ctrl C`)
+- Paste (`Ctrl V`)
+- Zoom In (`Ctrl +`)
+- Zoom Out (`Ctrl -`)
+
+These options cannot be used outside of the query tab text editor.
 
 
 ## Table Panel
 
 The table panel to the left of the window displays all of the tables that have been imported into the project. Table information is stored in `.tables`, so leave this directory alone.
 
-## Tables
+### Tables
 
 Each table that is improted into the project is loaded from `.tables` upon execution of ExtendedSQL. To delete a table, right click on the name of the table and select `Delete`. This will remove the table from the panel and the `.tables` directory. `Get Info` currently does not do anything.
 
 ### New Table
 
+To create a new table, click the `New Table` button to the top left of the window and above the table panel. 
+
+Currently the only way to add a table in ExtendedSQL is to import it from PostgreSQL. Therefore, you want to first ensure that there is a table in PostgreSQL that you want to import into ExtendedSQL.
+
+Then, input the `table name` along with the `username`, `password`, `port number`, and `host name`. The default values can usually be left as __localhost__ for `host name` and __5432__ for `port number`.
+
+If the table can be successfully imported, it will appear on the table panel.
