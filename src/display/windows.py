@@ -234,8 +234,8 @@ class MainWindow(QMainWindow,CentralWidgetActions,SidePanelActions):
     def about(self):
         QMessageBox.about(self, "About", (
             "ExtendedSQL is an application interface for a new query language "
-            "that allows for computation of aggregates outside of the grouping "
-            "variables. This query language is best utilized for OLAP purposes."
+            "that allows for computation of aggregates outside of the scope of the "
+            "grouping variables. This query language is best utilized for OLAP purposes."
         ))
 
 
