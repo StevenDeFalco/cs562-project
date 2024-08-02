@@ -141,8 +141,10 @@ class MainWindow(QMainWindow,CentralWidgetActions,SidePanelActions):
 
         '''
         Menu Bar
+            - ExtendedSQL: About and close application
             - File: Actions for file management
             - Edit: Actions for text editing in the query tabs
+            - Run: Execute query
         '''
 
         menubar = self.menuBar()
