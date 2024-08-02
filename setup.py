@@ -18,7 +18,11 @@ setup(
     },
     author='Lucas Hope',
     author_email='lucasfhope@icloud.com',
-    description='An interface to use a new query language, which can be used for OLAP purposes',
+    description= (
+        "ExtendedSQL is an application interface for a new query language "
+        "that allows for computation of aggregates outside of the scope of the "
+        "grouping variables. This query language is best utilized for OLAP purposes."
+    ),
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/lucasfhope/ExtendedSQL.git',

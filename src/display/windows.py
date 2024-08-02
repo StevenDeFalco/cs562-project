@@ -234,8 +234,11 @@ class MainWindow(QMainWindow,CentralWidgetActions,SidePanelActions):
         self.load_tables_list()
 
     def about(self):
-        #TODO
-        QMessageBox.about(self, "About", "")
+        QMessageBox.information(self, "About", (
+            "ExtendedSQL is an application built around a new query language "
+            "that allows for computation of aggregates outside of the scope of the "
+            "grouping variables. This query language is best utilized for OLAP purposes."
+        ))
 
 
 
