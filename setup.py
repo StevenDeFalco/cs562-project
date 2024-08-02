@@ -8,7 +8,7 @@ def read_requirements():
 
 setup(
     name='ExtendedSQL',
-    version='1.0.0',
+    version='1.1',
     packages=find_packages(),
     install_requires=read_requirements(),
     entry_points={
@@ -19,7 +19,7 @@ setup(
     author='Lucas Hope',
     author_email='lucasfhope@icloud.com',
     description= (
-        "ExtendedSQL is an application interface for a new query language "
+        "ExtendedSQL is an application built around a new query language "
         "that allows for computation of aggregates outside of the scope of the "
         "grouping variables. This query language is best utilized for OLAP purposes."
     ),
