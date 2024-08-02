@@ -1,7 +1,9 @@
 from src.display.parser.error import ParsingError
+from src.connect.postgres_oids import NUMERICAL_OIDs, STRING_OIDs, DATE_OID, BOOLEAN_OID
 
 import re
 from datetime import datetime
+
 
 
 # OIDs for datatypes in postgreSQL
