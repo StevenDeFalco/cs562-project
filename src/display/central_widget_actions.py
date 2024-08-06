@@ -1,5 +1,11 @@
+import io
 import os
+import csv
 import tabulate as tb
+import pandas as pd
+from texttable import Texttable
+
+
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QHBoxLayout, QToolButton, QTextEdit, 
@@ -47,15 +53,16 @@ class CentralWidgetActions:
         layout.addWidget(QLabel("Execution Output"))
         self.output_display = QTextEdit()
         self.output_display.setReadOnly(True)
-        # Set monospaced font
+        
         monospaced_font = QFont("Courier New", 14)
         self.output_display.setFont(monospaced_font)
+        
         layout.addWidget(self.output_display)
         execution_output_screen.setLayout(layout)
         return execution_output_screen
     
-    def update_execution_output(self, text):
-        self.output_display.append(text)
+    def update_execution_output(self, html_data):
+        self.output_display.setHtml(html_data)
 
     def toggle_output_screen(self):
         if self.tabWidget.count() == 0:
@@ -73,16 +80,42 @@ class CentralWidgetActions:
         if tab_index == -1:
             return
         else:
-            query_text = self.tabWidget.currentWidget().toPlainText()
+            query = self.tabWidget.currentWidget().toPlainText()
             try:
-                result = exe.execute(query_text)
-                table = tb.tabulate(result, headers="keys", tablefmt="grid")
-                self.update_execution_output(table)
-            except ParsingError as e:
-                self.update_execution_output(str(e))
+                result = exe.execute(query)
+                df = pd.DataFrame(result)
+                
+                # Convert the DataFrame to an HTML table with CSS styling
+                table_html = """
+                <style>
+                    table.dataframe {
+                    border-collapse: collapse;
+                    width: 100%;
+                    }
+                    table.dataframe th,
+                    table.dataframe td {
+                        border: 1px solid black;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    table.dataframe th {
+                        font-weight: bold;
+                        font-size: 16px;
+                    }
+                </style>
+                """ + df.to_html(classes='dataframe',index=False)
 
-    def update_execution_output(self, output):
-        self.output_display.setPlainText(output)
+                self.update_execution_output(table_html)
+
+            except ParsingError as e:
+                
+                error_html = f"""
+                <div style="color: red;">
+                    <strong>Error:</strong> {str(e)}
+                </div>
+                """
+
+                self.update_execution_output(error_html)
     
 
     '''

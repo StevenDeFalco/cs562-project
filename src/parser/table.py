@@ -17,7 +17,7 @@ def get_table(table_name):
     '''
 
     if table_name == '':
-        return (None,False,False)
+        return (None,False,False) 
     
     if not os.path.isdir(TABLES_DIRECTORY_PATH):
         os.mkdir(TABLES_DIRECTORY_PATH)
@@ -35,11 +35,11 @@ def get_table(table_name):
         column_datatypes = dict(zip(df[0], df[1]))
         
         df = pd.read_csv(os.path.join(table_dir_path, 'columns'), header=None)
-        columns = df[0].tolist()
+        columns = df.values.flatten()
 
         return (table,columns,column_datatypes)
     
-    except Exception as e:
+    except Exception:
       
 
       return (None, True, True)
