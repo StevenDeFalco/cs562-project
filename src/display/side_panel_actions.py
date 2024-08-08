@@ -89,7 +89,6 @@ class SidePanelActions:
 
             for row in csv_reader:
                 column_oid = int(row[1].strip())
-                print(column_oid)
                 if column_oid in NUMERICAL_OIDs:
                     row[1] = 'Number'
                 elif column_oid in STRING_OIDs:

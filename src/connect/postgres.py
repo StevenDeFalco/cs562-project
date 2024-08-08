@@ -58,7 +58,6 @@ def import_table(table, username,password,host,port):
 
     except Exception as e:
         shutil.rmtree(new_table_dir)
-        print(e)
         raise Exception("Could not write data to file.")
 
 
