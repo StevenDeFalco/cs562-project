@@ -4,10 +4,10 @@ import pandas as pd
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QHBoxLayout, QToolButton, QTextEdit, 
-    QMessageBox, QFileDialog, QTabBar, QSizePolicy, QStyle, QPushButton, QSpacerItem
+    QMessageBox, QFileDialog, QTabBar, QSizePolicy, QStyle
 )
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QFont
+from PyQt5.QtCore import Qt, QStandardPaths
+from PyQt5.QtGui import QPixmap
 
 import src.execution.execute as exe
 from src.parser.error import ParsingError
@@ -204,7 +204,15 @@ class CentralWidgetActions:
             return 
         
         options = QFileDialog.Options()
-        file_name, _ = QFileDialog.getSaveFileName(self, "Download Datatable", "", "CSV Files (*.csv);;All Files (*)", options=options)
+        download_path = QStandardPaths.writableLocation(QStandardPaths.DownloadLocation) + "/datatable.csv"
+
+        base, ext = os.path.splitext(download_path)
+        counter = 1
+        while os.path.exists(download_path):
+            download_path = f"{base}_{counter}{ext}"
+            counter += 1
+
+        file_name, _ = QFileDialog.getSaveFileName(self, "Download Datatable", download_path, "CSV Files (*.csv);;All Files (*)", options=options)
         
         if file_name:
             try:
