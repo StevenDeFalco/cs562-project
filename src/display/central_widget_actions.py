@@ -1,15 +1,10 @@
-import io
 import os
 import csv
-import tabulate as tb
 import pandas as pd
-from texttable import Texttable
-
-
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QHBoxLayout, QToolButton, QTextEdit, 
-    QMessageBox, QFileDialog, QTabBar, QSizePolicy, QStyle
+    QMessageBox, QFileDialog, QTabBar, QSizePolicy, QStyle, QPushButton, QSpacerItem
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QFont
@@ -21,7 +16,7 @@ from src.parser.error import ParsingError
 class CentralWidgetActions:
 
     '''
-    Logo Screen (no tabs open)
+    Logo Screen (no tabs open) and Tab Screen
     '''
 
     def create_logo_screen(self):
@@ -41,30 +36,9 @@ class CentralWidgetActions:
             ))
         
         return logo_widget
-    
 
-    ''' 
-    Output Screen (bottom panel)
-    '''
 
-    def create_execution_output_screen(self):
-        execution_output_screen = QWidget()
-        layout = QVBoxLayout()
-        layout.addWidget(QLabel("Execution Output"))
-        self.output_display = QTextEdit()
-        self.output_display.setReadOnly(True)
-        
-        monospaced_font = QFont("Courier New", 14)
-        self.output_display.setFont(monospaced_font)
-        
-        layout.addWidget(self.output_display)
-        execution_output_screen.setLayout(layout)
-        return execution_output_screen
-    
-    def update_execution_output(self, html_data):
-        self.output_display.setHtml(html_data)
-
-    def toggle_output_screen(self):
+    def toggle_tab_screen(self):
         if self.tabWidget.count() == 0:
             self.stackedCentralWidget.setCurrentWidget(self.logo_screen)
         else:
@@ -82,8 +56,16 @@ class CentralWidgetActions:
         else:
             query = self.tabWidget.currentWidget().toPlainText()
             try:
-                result = exe.execute(query)
+                if(query.strip() != ''):
+                    result = exe.execute(query)
+                    self.output_downloadable = True
+                else: 
+                    result = []
+                    self.output_df = pd.DataFrame()
+                    self.output_downloadable = False
+                
                 df = pd.DataFrame(result)
+                self.output_df = df
                 
                 # Convert the DataFrame to an HTML table with CSS styling
                 table_html = """
@@ -115,7 +97,19 @@ class CentralWidgetActions:
                 </div>
                 """
 
+                self.output_df = pd.DataFrame()
+                self.output_downloadable = False
                 self.update_execution_output(error_html)
+
+
+    
+    def update_execution_output(self, html_data):
+        self.output_display.setHtml(html_data)
+        self.update_download_button()
+
+
+    def update_download_button(self):
+        self.download_button.setEnabled(self.output_downloadable)
     
 
     '''
@@ -172,7 +166,7 @@ class CentralWidgetActions:
             else:
                 self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
 
-        self.toggle_output_screen()
+        self.toggle_tab_screen()
 
     
     '''
@@ -181,7 +175,7 @@ class CentralWidgetActions:
 
     def open_file(self):
         options = QFileDialog.Options()
-        file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Text Files (*.txt);;All Files (*)", options=options)
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "", "ESQL files (*.esql);;Text Files (*.txt);;All Files (*)", options=options)
         if file_name:
             try:
                 with open(file_name, 'r') as file:
@@ -195,7 +189,7 @@ class CentralWidgetActions:
 
     def save_file(self):
         options = QFileDialog.Options()
-        file_name, _ = QFileDialog.getSaveFileName(self, "Save File", "", "Text Files (*.txt);;All Files (*)", options=options)
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save File", "", "ESQL files (*.esql);;Text Files (*.txt);;All Files (*)", options=options)
         if file_name:
             try:
                 current_editor = self.tabWidget.currentWidget()
@@ -204,6 +198,19 @@ class CentralWidgetActions:
                 self.tabWidget.setTabText(self.tabWidget.currentIndex(), file_name)
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Could not save file: {e}")
+
+    def download_df_as_csv(self):
+        if self.output_df.empty:
+            return 
+        
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getSaveFileName(self, "Download Datatable", "", "CSV Files (*.csv);;All Files (*)", options=options)
+        
+        if file_name:
+            try:
+                self.output_df.to_csv(file_name, index=True)
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"Could not download the datatable: {e}")
 
     
     ''' 

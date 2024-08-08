@@ -86,13 +86,6 @@ class SidePanelActions:
         column_data = []
         with open(path_to_column_datatype_file, mode='r') as file:
             csv_reader = csv.reader(file)
-            
-            print(NUMERICAL_OIDs)
-            print(STRING_OIDs)
-            print(BOOLEAN_OID)
-            print(DATE_OID)
-            print()
-
 
             for row in csv_reader:
                 column_oid = int(row[1].strip())
@@ -114,7 +107,7 @@ class SidePanelActions:
         headers = ['Column','Datatype']
 
         message = f"<h2>{table_folder_name.upper()} Table Column Information:</h2>"
-        message += '<div style="text-align: center;">'  # Start centered div
+        message += '<div style="text-align: center;">' 
         message += "<table border='1' cellpadding='5'>"
         message += "<tr><th>" + "</th><th>".join(headers) + "</th></tr>"
         for row in column_data:
@@ -130,16 +123,4 @@ class SidePanelActions:
         self.right_clicked_item = None
         
 
-            
-
-
         
-        '''
-        folder_name = self.right_clicked_item.text()
-        path = os.path.join(QDir.currentPath(), folder_name)
-        
-        if os.path.exists(path):
-            folder_info = f"Folder: {folder_name}\nPath: {path}\n"
-            QMessageBox.information(self, "Folder Info", folder_info)
-        self.right_clicked_item = None
-        '''

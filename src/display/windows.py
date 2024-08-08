@@ -1,10 +1,11 @@
 import os
+import pandas as pd
 
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QMainWindow, QAction, QTabWidget, QVBoxLayout, QWidget, QSplitter, QMessageBox,
-    QListWidget, QPushButton, QHBoxLayout, QSizePolicy, QStackedWidget
+    QListWidget, QPushButton, QHBoxLayout, QSizePolicy, QStackedWidget, QTextEdit, QSpacerItem, QLabel
 )
 
 
@@ -48,9 +49,7 @@ class MainWindow(QMainWindow,CentralWidgetActions,SidePanelActions):
         self.tabWidget = QTabWidget()
         self.tabWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.tabWidget.tabBar().tabCloseRequested.connect(self.close_tab_with_prompt)
-        self.tabWidget.currentChanged.connect(self.toggle_output_screen)
-
-        self.execution_output_screen = self.create_execution_output_screen()
+        self.tabWidget.currentChanged.connect(self.toggle_tab_screen)
 
         # Create the buttons
         self.execute_button = QPushButton("Execute")
@@ -74,7 +73,6 @@ class MainWindow(QMainWindow,CentralWidgetActions,SidePanelActions):
         self.button_layout.addStretch(1)
         self.button_layout.addWidget(self.execute_button)
         
-
         # Create a widget to hold the buttons
         self.button_widget = QWidget()
         self.button_widget.setLayout(self.button_layout)
@@ -87,6 +85,31 @@ class MainWindow(QMainWindow,CentralWidgetActions,SidePanelActions):
         # Create a widget to hold the top layout
         self.top_widget_container = QWidget()
         self.top_widget_container.setLayout(self.top_layout)
+
+        # Create the output screen
+        self.execution_output_screen = QWidget()
+        layout = QVBoxLayout()
+        self.output_display = QTextEdit()
+        self.output_display.setReadOnly(True)
+        monospaced_font = QFont("Courier New", 14)
+        self.output_display.setFont(monospaced_font)
+
+        # Labels and Download button above screen
+        hbox = QHBoxLayout()
+        hbox.addWidget(QLabel("Execution Output"))
+        spacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        hbox.addItem(spacer)
+        
+        self.download_button = QPushButton("Download")
+        self.output_downloadable = False
+        self.output_df = pd.DataFrame()
+        self.download_button.setEnabled(self.output_downloadable)
+        self.download_button.clicked.connect(self.download_df_as_csv) 
+        hbox.addWidget(self.download_button)
+        
+        layout.addLayout(hbox)
+        layout.addWidget(self.output_display)
+        self.execution_output_screen.setLayout(layout)
 
         self.splitter = QSplitter(Qt.Vertical)
         self.splitter.addWidget(self.top_widget_container)
