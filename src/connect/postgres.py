@@ -3,6 +3,7 @@ import shutil
 import csv
 import psycopg2
 import psycopg2.extras
+from src.connect.postgres_oids import NUMERICAL_OIDs, STRING_OIDs, DATE_OID, BOOLEAN_OID
 
 TABLES_DIRECTORY_PATH = '.tables'
 
@@ -26,8 +27,18 @@ def import_table(table, username,password,host,port):
     datatypes = [desc[1] for desc in cur.description]
 
     column_datatypes = {}
-    for i in range(0, len(columns)):
-        column_datatypes[columns[i]] = datatypes[i]
+    for i in range(len(columns)):
+        # Map OIDs to human-readable data types
+        if datatypes[i] in NUMERICAL_OIDs:
+            column_datatypes[columns[i]] = 'numeric'
+        elif datatypes[i] in STRING_OIDs:
+            column_datatypes[columns[i]] = 'string'
+        elif datatypes[i] == DATE_OID:
+            column_datatypes[columns[i]] = 'date'
+        elif datatypes[i] == BOOLEAN_OID:
+            column_datatypes[columns[i]] = 'boolean'
+        else:
+            column_datatypes[columns[i]] = 'unknown'  # Handle unknown types
 
     if not os.path.isdir(TABLES_DIRECTORY_PATH):
         os.mkdir(TABLES_DIRECTORY_PATH)
@@ -40,7 +51,6 @@ def import_table(table, username,password,host,port):
 
     datatable_path = os.path.join(new_table_dir,"table")
     columns_path = os.path.join(new_table_dir,"columns")
-    column_datatypes_path = os.path.join(new_table_dir,"column_datatypes")
 
     try:
         with open(datatable_path, 'w') as file:
@@ -48,10 +58,6 @@ def import_table(table, username,password,host,port):
             writer.writerows(cur.fetchall())
 
         with open(columns_path, 'w') as file:
-            writer = csv.writer(file)
-            writer.writerow(columns)
-
-        with open(column_datatypes_path, 'w') as file:
             writer = csv.writer(file)
             for key, value in column_datatypes.items():
                 writer.writerow([key, value])

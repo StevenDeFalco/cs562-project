@@ -1,401 +1,503 @@
-import pytest
-import tempfile
-
-
-from src.query_parser.parser import Parser, ParsingError
-from src.connect import get_database
-
-# define unit tests for the query parser
-# include all edge cases for each clause
-
-database, columns, column_datatypes = get_database()
-columns = [col.lower() for col in columns]
-column_datatypes = {col.lower(): dtype for col,dtype in column_datatypes.items()}
-
-@pytest.fixture
-def test_query_file(request):
-    content = request.param
-    file = tempfile.NamedTemporaryFile(delete=True, mode='w', suffix='.txt')
-    file.write(content)
-    file.seek(0)
-    filename = file.name
-    yield filename
-    file.close()
-
-def parse_and_catch_error(file_path):
-    try:
-        parser = Parser(file_path, columns, column_datatypes)
-    except ParsingError as e:
-        return str(e)
-    return None
-
-
-# Queries with SELECT errors
-no_select = "OVER 2 WHERE 1.prod = prod, 2.prod != prod"
-empty_select = "SELECT WHERE cust='Dan'"
-select_bad_column = "SELECT cust,product,sum_quant HAVING sum_quant >= 1"
-select_wrong_group_aggregate1 = "SELECT cust,month,day,2_avg_quant OVER 1 where 1.year = 2016"
-select_wrong_group_aggregate2 = "SELECT cust,month,day,0_avg_quant OVER 7 where 1.year = 2016"
-select_bad_aggregate1 = "SELECT cust, div_quant"
-select_bad_aggregate2 = "SELECT cust, sum_q"
-select_bad_aggregate3 = "SELECT cust, 1_div_quant OVER 1"
-select_bad_aggregate4 = "SELECT cust, 1_sum_q OVER 1"
-
-@pytest.mark.parametrize('test_query_file', [no_select], indirect=True)
-def test_selecterror1(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "Every query must start with SELECT"
-
-@pytest.mark.parametrize('test_query_file', [empty_select], indirect=True)
-def test_selecterror2(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "No SELECT argument found"
-
-@pytest.mark.parametrize('test_query_file', [select_bad_column], indirect=True)
-def test_selecterror3(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'product' is not a valid SELECT argument"
-
-@pytest.mark.parametrize('test_query_file', [select_wrong_group_aggregate1], indirect=True)
-def test_selecterror4(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'2_avg_quant' is not a valid SELECT argument"
-
-@pytest.mark.parametrize('test_query_file', [select_wrong_group_aggregate2], indirect=True)
-def test_selecterror5(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'0_avg_quant' is not a valid SELECT argument"
-
-@pytest.mark.parametrize('test_query_file', [select_bad_aggregate1], indirect=True)
-def test_selecterror6(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'div_quant' is not a valid SELECT argument"
-
-@pytest.mark.parametrize('test_query_file', [select_bad_aggregate2], indirect=True)
-def test_selecterror7(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'sum_q' is not a valid SELECT argument"
-
-@pytest.mark.parametrize('test_query_file', [select_bad_aggregate3], indirect=True)
-def test_selecterror8(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'1_div_quant' is not a valid SELECT argument"
-
-@pytest.mark.parametrize('test_query_file', [select_bad_aggregate4], indirect=True)
-def test_selecterror9(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'1_sum_q' is not a valid SELECT argument"
-
-
-# Queries with OVER errors
-
-# NOTE: NOT going to work now, chnaged 
-empty_over = "select cust over where state='NY'"
-non_number_over = "select prod over x,y where cust = 'Dan"
-
-@pytest.mark.parametrize('test_query_file', [empty_over], indirect=True)
-def test_overerror1(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "No OVER argument found"
-
-@pytest.mark.parametrize('test_query_file', [non_number_over], indirect=True)
-def test_overerror2(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'x,y' could not be parsed as the OVER argument"
-
-
-# Queries with WHERE errors
-empty_where = "select cust,prod where "
-wrong_group_where = "select cust,state over 2 where 1.prod = 'Apple', 2.prod = 'Jelly', 3.prod = 'Butter'"
-wrong_column_where = "select prod over 1 where 1.location='NJ'"
-no_group_where = "select prod where location = 'NJ'"
-double_equals_where = "select state over 1 where 1.cust == 'Dan'"
-bad_comparison_string_where = "select day over 1 where 1.prod = Jelly"
-bad_comparison_number_where = "select cust over 1 where 1.day = '5'"
-bad_comparison_date_where = "select prod over 1 where 1.date = 'string'"
-# no boolean test
-and_or_where = "select cust over 1 where 1.prod = 'Apple' and 1.day = 5"       # this should eventually be ok
-
-@pytest.mark.parametrize('test_query_file', [empty_where], indirect=True)
-def test_whereerror1(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "No WHERE argument found"
-
-@pytest.mark.parametrize('test_query_file', [wrong_group_where], indirect=True)
-def test_whereerror2(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "Invalid group in the WHERE condition '3.prod = 'Butter''"
-
-@pytest.mark.parametrize('test_query_file', [wrong_column_where], indirect=True)
-def test_whereerror3(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "WHERE condition '1.location='NJ'' could not be evaluated"
-
-@pytest.mark.parametrize('test_query_file', [no_group_where], indirect=True)
-def test_whereerror4(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "No group in the WHERE condition 'location = 'NJ''"
-
-@pytest.mark.parametrize('test_query_file', [double_equals_where], indirect=True)
-def test_whereerror5(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "WHERE condition '1.cust == 'Dan'' could not be evaluated"
-
-@pytest.mark.parametrize('test_query_file', [bad_comparison_string_where], indirect=True)
-def test_whereerror6(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "WHERE condition '1.prod = Jelly' could not be evaluated"
-
-@pytest.mark.parametrize('test_query_file', [bad_comparison_number_where], indirect=True)
-def test_whereerror7(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "WHERE condition '1.day = '5'' could not be evaluated"
-
-@pytest.mark.parametrize('test_query_file', [bad_comparison_date_where], indirect=True)
-def test_whereerror8(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "WHERE condition '1.date = 'string'' could not be evaluated"
-
-@pytest.mark.parametrize('test_query_file', [and_or_where], indirect=True)
-def test_whereerror9(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "WHERE condition '1.prod = 'Apple' and 1.day = 5' could not be evaluated"
-
-
-# Queries with HAVING errors
-bad_aggregate1_having = "select cust over 1 where 1.prod = 'Apple' having 1_average_quant >= 100 and 2_avg_quant <= 20"
-bad_aggregate2_having = "select cust,prod over 2 where 1.cust = 'Dan',2.prod = 'Apple' having 0_quant >= 100"
-bad_aggregate3_having = "select cust,month over 3 where 3.prod = 'Jelly',2.prod = 'Apple' having 2_div_quant <= 20"
-bad_aggregate4_having = "select cust having 0_sum_quant < 10000"
-bad_eval1_having = "SELECT cust HAVING (1+ sum_quant > 7890"
-bad_eval2_having = "Select cust having 7 < > 2"
-not_aggregate1_having = "select prod having day = 2"
-
-@pytest.mark.parametrize('test_query_file', [bad_aggregate1_having], indirect=True)
-def test_havingerror1(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'1_average_quant' cannot be parsed as a HAVING argument"
-
-@pytest.mark.parametrize('test_query_file', [bad_aggregate2_having], indirect=True)
-def test_havingerror2(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'0_quant' cannot be parsed as a HAVING argument"
-
-@pytest.mark.parametrize('test_query_file', [bad_aggregate3_having], indirect=True)
-def test_havingerror3(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'2_div_quant' cannot be parsed as a HAVING argument"
-
-@pytest.mark.parametrize('test_query_file', [bad_aggregate4_having], indirect=True)
-def test_havingerror4(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'0_sum_quant' cannot be parsed as a HAVING argument"
-
-@pytest.mark.parametrize('test_query_file', [bad_eval1_having], indirect=True)
-def test_havingerror5(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "HAVING could not be evaluated"
-
-@pytest.mark.parametrize('test_query_file', [bad_eval2_having], indirect=True)
-def test_havingerror6(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "HAVING could not be evaluated"
-
-@pytest.mark.parametrize('test_query_file', [not_aggregate1_having], indirect=True)
-def test_havingerror7(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'day' cannot be parsed as a HAVING argument"
-
-
-# Queries with Order By errors
-num0_orderby = "select cust, prod order by 0"
-numtoohigh_orderby = "select cust,prod,month order by 4"
-notnum_orderby = "select cust,prod order by apple"
-
-@pytest.mark.parametrize('test_query_file', [num0_orderby], indirect=True)
-def test_orderby1(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'0' cannot be parsed as an ORDER BY argument"
-
-@pytest.mark.parametrize('test_query_file', [numtoohigh_orderby], indirect=True)
-def test_orderby2(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message ==  "'4' cannot be parsed as an ORDER BY argument"
-
-@pytest.mark.parametrize('test_query_file', [notnum_orderby], indirect=True)
-def test_orderby3(test_query_file):
-    error_message = parse_and_catch_error(test_query_file)
-    assert error_message == "'apple' cannot be parsed as an ORDER BY argument"
-
-if __name__ == '__main__':
-    pytest.main()
-
-
-# keep this for when I need to test the output of the query
+'''
+PARSER UNIT TESTS
+Ensure that the sales table is properly loaded into the .tables directory before running the test cases.
+Even though there are no dirrect test cases to test FROM and OVER, they are inherenntly tested through all of the tests.
 '''
 
-import psycopg2
-import pandas as pd
+import pytest
+from src.parser.parse import get_processed_query, ParsingError
 
-def upload_file_to_postgresql(file_path, table_name, conn_params):
-    # Read the file into a DataFrame
-    df = pd.read_csv(file_path)  # Change to pd.read_excel(file_path) for Excel files
+'''
+PARSING ERROR DETECTION TESTS
+'''
+
+def test_valid_select_clauses():
+    """Test valid SELECT clause variations"""
+    valid_queries = [
+        "SELECT cust, quant.sum FROM sales OVER g1 WHERE quant > 100",
+        "SELECT prod, quant.avg FROM sales OVER g1 WHERE state = 'NY'",
+        "SELECT cust, quant.min, quant.max FROM sales OVER g1,g2 WHERE credit = true",
+        "SELECT state, g1.quant.sum FROM sales OVER g1 WHERE year = 2020",
+        "SELECT prod, g1.quant.count, g2.quant.avg FROM sales OVER g1,g2 WHERE month >= 6"
+    ]
     
-    # Connect to PostgreSQL
-    conn = psycopg2.connect(**conn_params)
-    cur = conn.cursor()
+    for query in valid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError as e:
+            pytest.fail(f"Valid SELECT clause raised ParsingError: {str(e)}")
 
-    # Create table based on DataFrame columns
-    columns = ", ".join([f"{col} TEXT" for col in df.columns])  # Assuming all columns are of type TEXT
-    create_table_query = f"CREATE TABLE IF NOT EXISTS {table_name} ({columns});"
-    cur.execute(create_table_query)
-    conn.commit()
-
-    # Insert DataFrame data into PostgreSQL table
-    for _, row in df.iterrows():
-        values = ', '.join([f"'{str(val)}'" for val in row])
-        insert_query = f"INSERT INTO {table_name} VALUES ({values});"
-        cur.execute(insert_query)
+def test_invalid_select_clauses():
+    """Test invalid SELECT clause variations"""
+    invalid_queries = [
+        "SELECT invalid_col FROM sales OVER g1",  # Invalid column
+        "SELECT FROM sales OVER g1",  # Empty SELECT
+        "SELECT prod, quant.invalid FROM sales OVER g1",  # Invalid aggregate function
+        "SELECT prod, invalid.sum FROM sales OVER g1",  # Aggregate on invalid column
+        "SELECT g3.quant.sum FROM sales OVER g1,g2"  # Invalid group reference
+    ]
     
-    conn.commit()
+    for query in invalid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError:
+            continue  # Expected exception, do nothing
+        except Exception:
+            print(f"Unexpected error for query: {query}")  # Print unexpected errors
+            raise  # Re-raise the unexpected exception
+        print(f"Failed to raise ParsingError for query: {query}")  # Print the query that did not raise the expected error
 
-    # Query the resulting table
-    select_query = f"SELECT * FROM {table_name};"
-    cur.execute(select_query)
-    rows = cur.fetchall()
+def test_invalid_over_clauses():
+    """Test valid WHERE clause conditions"""
+    invalid_queries = [
+        "SELECT cust FROM sales OVER g 1 WHERE quant > 100",  # Space in between
+        "SELECT prod FROM sales OVER g1, WHERE state = 'NY' AND credit = true",  # comma but only one group
+        "SELECT state FROM sales OVER g1, long name WHERE year = 2020 AND month <= 6",  # two words  
+    ]
+    
+    for query in invalid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError:
+            continue  # Expected exception, do nothing
+        except Exception:
+            print(f"Unexpected error for query: {query}")  # Print unexpected errors
+            raise  # Re-raise the unexpected exception
+        print(f"Failed to raise ParsingError for query: {query}")
 
-    # Print the resulting table
-    for row in rows:
-        print(row)
+def test_valid_where_clauses():
+    """Test valid WHERE clause conditions"""
+    valid_queries = [
+        "SELECT cust FROM sales OVER g1 WHERE quant > 100",
+        "SELECT prod FROM sales OVER g1 WHERE state = 'NY' AND credit = true",
+        "SELECT state FROM sales OVER g1 WHERE year = 2020 AND (month <= 6 or month = 12)",
+        "SELECT cust FROM sales OVER g1 WHERE NOT quant >= 500 AND state = 'CT' or credit = true",
+        "SELECT prod FROM sales OVER g1 WHERE day < 15 AND month = 7 AND year = 2018",
+        "SELECT cust FROM sales OVER g1 WHERE NOT quant > 100",
+        "SELECT prod FROM sales OVER g1 WHERE NOT state = 'NY'",
+        "SELECT state FROM sales OVER g1 WHERE NOT (year = 2020 AND month <= 6)",
+        "SELECT cust FROM sales OVER g1 WHERE NOT (quant >= 500 AND state = 'CT')"
+    ]
+    
+    for query in valid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError as e:
+            pytest.fail(f"Valid WHERE clause raised ParsingError: {str(e)}")
 
-    # Close the cursor and connection
-    cur.close()
-    conn.close()
+def test_valid_where_clauses_with_dates_strings_booleans_numbers():
+    """Test valid WHERE clause conditions with various data types"""
+    valid_queries = [
+        "SELECT cust FROM sales OVER g1 WHERE credit = true",
+        "SELECT state FROM sales OVER g1 WHERE year = 2020",
+        "SELECT cust FROM sales OVER g1 WHERE state = 'NY'",
+        "SELECT prod FROM sales OVER g1 WHERE date = '2023-01-01'",
+        "SELECT cust FROM sales OVER g1 WHERE quant > 100",
+        "SELECT prod FROM sales OVER g1 WHERE credit = false",
+        "SELECT state FROM sales OVER g1 WHERE date < '2023-12-31'"
+    ]
+    
+    for query in valid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError as e:
+            pytest.fail(f"Valid WHERE clause raised ParsingError: {str(e)}")
 
-if __name__ == "__main__":
-    # Connection parameters to your PostgreSQL database
-    conn_params = {
-        'dbname': 'your_database_name',
-        'user': 'your_username',
-        'password': 'your_password',
-        'host': 'your_host',
-        'port': 'your_port'
+def test_invalid_where_clauses():
+    """Test invalid WHERE clause conditions"""
+    invalid_queries = [
+        "SELECT cust FROM sales OVER g1 WHERE quant >>= 100",  # Invalid operator
+        "SELECT prod FROM sales OVER g1 WHERE state = ",  # Missing value
+        "SELECT state FROM sales OVER g1 WHERE AND year = 2020",  # Missing left operand
+        "SELECT cust FROM sales OVER g1 WHERE quant > 500 OR OR state = 'CT'",  # Double operator
+        "SELECT prod FROM sales OVER g1 WHERE = 'Apple'",  # Missing column
+        "SELECT cust FROM sales OVER g1 WHERE quant > 100 AND AND state = 'NY'",  # Double AND operator
+        "SELECT prod FROM sales OVER g1 WHERE state = 'NY' OR OR credit = true"  # Double OR operator
+    ]
+    
+    for query in invalid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError:
+            continue  # Expected exception, do nothing
+        except Exception:
+            print(f"Unexpected error for query: {query}")  # Print unexpected errors
+            raise  # Re-raise the unexpected exception
+        print(f"Failed to raise ParsingError for query: {query}")  # Print the query that did not raise the expected error
+
+def test_valid_such_that_clauses():
+    """Test valid SUCH THAT clause conditions"""
+    valid_queries = [
+        "SELECT cust FROM sales OVER g1 SUCH THAT g1.quant > 100",
+        "SELECT prod, state FROM sales OVER g1,g2 SUCH THAT not g1.quant > 50, g2.credit = true",
+        "SELECT cust FROM sales OVER g1 SUCH THAT g1.year = 2020 AND g1.quant > 80",
+        "SELECT prod FROM sales OVER g1 SUCH THAT g1.day < 15 OR g1.state = 'NY'",
+        "SELECT state FROM sales OVER g1,g2,g3 SUCH THAT g1.credit = true AND g1.quant > 300, g2.prod = 'Apple', g3.cust = 'Dan' or g3.cust = 'Sam'",
+        "SELECT prod FROM sales OVER g1 SUCH THAT g1.day < 15 AND not (g1.state = 'NY' OR g1.year = 2021)",
+        "SELECT cust FROM sales OVER g1 SUCH THAT NOT g1.quant > 50",
+        "SELECT prod FROM sales OVER g2 SUCH THAT NOT g2.credit = true",
+        "SELECT state FROM sales OVER g1 SUCH THAT NOT (g1.year = 2020 AND g1.quant > 80)"
+    ]
+    
+    for query in valid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError as e:
+            pytest.fail(f"Valid SUCH THAT clause raised ParsingError: {str(e)}")
+
+def test_valid_such_that_clauses_with_dates_strings_booleans_numbers():
+    """Test valid SUCH THAT clause conditions with various data types"""
+    valid_queries = [
+        "SELECT cust FROM sales OVER g1 SUCH THAT g1.quant > 50",
+        "SELECT prod FROM sales OVER g1 SUCH THAT g1.credit = true",
+        "SELECT state FROM sales OVER g1 SUCH THAT g1.year = 2020",
+        "SELECT cust FROM sales OVER g1 SUCH THAT g1.state = 'NY'",
+        "SELECT prod FROM sales OVER g1 SUCH THAT g1.date = '2023-01-01'",
+        "SELECT cust FROM sales OVER g1 SUCH THAT g1.quant < 100",
+        "SELECT prod FROM sales OVER g1 SUCH THAT g1.credit = false",
+        "SELECT state FROM sales OVER g1 SUCH THAT g1.date > '2023-01-01'"
+    ]
+    
+    for query in valid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError as e:
+            pytest.fail(f"Valid SUCH THAT clause raised ParsingError: {str(e)}")
+
+def test_invalid_such_that_clauses():
+    """Test invalid SUCH THAT clause conditions"""
+    invalid_queries = [
+        "SELECT cust FROM sales OVER g1 SUCH THAT quant > 100",  # Missing group prefix
+        "SELECT prod FROM sales OVER g1 SUCH THAT invalid.quant > 50",  # Invalid group
+        "SELECT cust FROM sales OVER g1,g2 SUCH THAT g1.quant > 100, g2.quant < 50, g1.state = 'NY'",  # Mixed groups
+        "SELECT prod FROM sales OVER g1,g2 SUCH THAT g1.year = 2020 AND AND g2.sales < 1000",  # Double AND operator
+        "SELECT prod FROM sales OVER g1,g2 SUCH THAT g1.year = 2020 OR OR g2.sales < 1000"  # Double OR operator
+    ]
+    
+    for query in invalid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError:
+            continue  # Expected exception, do nothing
+        except Exception:
+            print(f"Unexpected error for query: {query}")  # Print unexpected errors
+            raise  # Re-raise the unexpected exception
+        print(f"Failed to raise ParsingError for query: {query}")  # Print the query that did not raise the expected error
+
+def test_valid_having_clauses():
+    """Test valid HAVING clause conditions"""
+    valid_queries = [
+        "SELECT cust FROM sales OVER g1 HAVING g1.quant.sum > 1000",
+        "SELECT prod FROM sales OVER g1 HAVING g1.quant.avg >= 50 AND g1.quant.count > 10",
+        "SELECT state FROM sales OVER g1 HAVING (g1.quant.max < 1000 and g1.quant.avg > 50) OR g1.quant.min > 100",
+        "SELECT prod FROM sales OVER g1,g2 HAVING g1.quant.sum > 5000 AND g2.quant.avg < 100",
+        "SELECT cust FROM sales OVER g1 HAVING g1.quant.sum > 1000 OR g1.quant.avg > 50",
+        "SELECT prod FROM sales OVER g1 HAVING g1.quant.avg >= 50 OR g1.quant.count > 10",
+        "SELECT state FROM sales OVER g1 HAVING g1.quant.max < 1000 OR g1.quant.min > 100",
+        "SELECT prod FROM sales OVER g1,g2 HAVING g1.quant.sum > 5000 OR g2.quant.avg < 100",
+        "SELECT cust FROM sales OVER g1 HAVING NOT g1.quant.sum > 1000",
+        "SELECT prod FROM sales OVER g1 HAVING NOT (g1.quant.avg >= 50 AND g1.quant.count > 10)"
+    ]
+    
+    for query in valid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError as e:
+            pytest.fail(f"Valid HAVING clause raised ParsingError: {str(e)}")
+
+def test_invalid_having_clauses():
+    """Test invalid HAVING clause conditions"""
+    invalid_queries = [
+        "SELECT cust FROM sales OVER g1 HAVING quant > 1000",  # Non-aggregate in HAVING
+        "SELECT prod FROM sales OVER g1 HAVING quant.invalid > 50",  # Invalid aggregate function
+        "SELECT state FROM sales OVER g1 HAVING g1.quant.sum",  # Incomplete condition
+        "SELECT cust FROM sales OVER g1 HAVING g3.quant.sum > 1000",  # Invalid group reference
+        "SELECT prod FROM sales OVER g1 HAVING invalid.sum > 100",  # Invalid column
+        "SELECT prod FROM sales OVER g1 HAVING g1.quant.sum > 1000 AND AND g1.quant.avg > 50",  # Double AND operator
+        "SELECT cust FROM sales OVER g1 HAVING g1.quant.sum > 1000 OR OR g1.quant.avg > 50"  # Double OR operator
+    ]
+    
+    for query in invalid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError:
+            continue  # Expected exception, do nothing
+        except Exception:
+            print(f"Unexpected error for query: {query}")  # Print unexpected errors
+            raise  # Re-raise the unexpected exception
+        print(f"Failed to raise ParsingError for query: {query}")  # Print the query that did not raise the expected error
+            
+
+def test_valid_order_by_clauses():
+    """Test valid ORDER BY clause variations"""
+    valid_queries = [
+        "SELECT cust, prod FROM sales OVER g1 ORDER BY 1",
+        "SELECT prod, state, quant FROM sales OVER g1 ORDER BY 2",
+        "SELECT cust, quant.sum FROM sales OVER g1 ORDER BY 1",
+        "SELECT prod, state, quant.avg FROM sales OVER g1 ORDER BY 3",
+        "SELECT state, quant.count, quant.max FROM sales OVER g1 ORDER BY 2"
+    ]
+    
+    for query in valid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError as e:
+            pytest.fail(f"Valid ORDER BY clause raised ParsingError: {str(e)}")
+
+def test_invalid_order_by_clauses():
+    """Test invalid ORDER BY clause variations"""
+    invalid_queries = [
+        "SELECT cust FROM sales OVER g1 ORDER BY 0",  # Invalid index (too low)
+        "SELECT prod FROM sales OVER g1 ORDER BY 2",  # Invalid index (too high)
+        "SELECT state FROM sales OVER g1 ORDER BY prod",  # Non-numeric value
+        "SELECT cust FROM sales OVER g1 ORDER BY 1.5",  # Non-integer value
+        "SELECT prod FROM sales OVER g1 ORDER BY"  # Missing value
+    ]
+    
+    for query in invalid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError:
+            continue  # Expected exception, do nothing
+        except Exception:
+            print(f"Unexpected error for query: {query}")  # Print unexpected errors
+            raise  # Re-raise the unexpected exception
+        print(f"Failed to raise ParsingError for query: {query}")  # Print the query that did not raise the expected error
+
+def test_combined_clauses():
+    """Test combinations of different clauses"""
+    valid_queries = [
+        "SELECT cust, g1.quant.sum, g2.quant.max FROM sales OVER g1,g2 WHERE state = 'NY' SUCH THAT g1.quant > 100, g2.prod = 'Apple' HAVING g2.quant.sum > 1000 ORDER BY 2",
+        "SELECT prod, quant.avg, g1.quant.avg FROM sales OVER g1 WHERE credit = true SUCH THAT g1.year = 2020 HAVING g1.quant.count > 5 order by 1",
+        "SELECT state, quant.max, g1.quant.max FROM sales OVER g1,g2 WHERE month >= 6 SUCH THAT g1.quant < 500, g2.quant > 10 and (g2.state = 'NY' or g2.state = 'CT') ORDER BY 1",
+        "SELECT cust, g1.quant.avg FROM sales OVER g1,g2 WHERE day < 15 SUCH THAT g1.state = 'CT', g2.quant > 200 HAVING g1.quant.avg > 50",
+        "SELECT prod, quant.min FROM sales WHERE year = 2018 HAVING quant.sum < 1000"
+    ]
+    
+    for query in valid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError as e:
+            pytest.fail(f"Valid combined clauses raised ParsingError: {str(e)}")
+
+def test_clause_ordering():
+    """Test that clauses must appear in correct order"""
+    invalid_queries = [
+        "SELECT cust WHERE state = 'NY' FROM sales OVER g1",  # Wrong order
+        "OVER g1 SELECT cust FROM sales",  # SELECT not first
+        "SELECT prod FROM sales WHERE credit = true HAVING sum_quant > 1000 SUCH THAT g1.quant > 100",  # SUCH THAT after HAVING
+        "SELECT state FROM sales OVER g1 ORDER BY 1 HAVING max_quant > 500",  # HAVING after ORDER BY
+        "WHERE year = 2020 SELECT cust FROM sales OVER g1"  # WHERE before SELECT
+    ]
+    
+    for query in invalid_queries:
+        try:
+            get_processed_query(query)
+        except ParsingError:
+            continue  # Expected exception, do nothing
+        except Exception:
+            print(f"Unexpected error for query: {query}")  # Print unexpected errors
+            raise  # Re-raise the unexpected exception
+        print(f"Failed to raise ParsingError for query: {query}")  # Print the query that did not raise the expected error
+
+
+'''
+QUERY STRUCTURE TESTS
+'''
+
+def test_parsed_select_structure():
+    """Test the structure of parsed SELECT statements with complex aggregates."""
+    query = "SELECT cust, prod, date.count, quant.sum, g1.quant.max, g1.quant.min, g2.quant.avg FROM sales OVER g1,g2"
+    result = get_processed_query(query)
+    
+    assert result['select_clause'] == {
+        'columns': ['cust', 'prod'],
+        'aggregates': {
+            'global': [
+                {'column': 'date', 'function': 'count', 'datatype': 'numerical'},
+                {'column': 'quant', 'function': 'sum', 'datatype': 'numerical'}
+            ],
+            'group_specific': [
+                {'group': 'g1', 'column': 'quant', 'function': 'max', 'datatype': 'numerical'},
+                {'group': 'g1', 'column': 'quant', 'function': 'min', 'datatype': 'numerical'},
+                {'group': 'g2', 'column': 'quant', 'function': 'avg', 'datatype': 'numerical'}
+            ]
+        }
+    }
+    assert result['aggregate_groups'] == ['g1', 'g2']
+
+
+def test_parsed_where_structure():
+    """Test the structure of parsed WHERE conditions with NOT, AND, OR, and parentheses."""
+    query = "SELECT cust FROM sales OVER g1 WHERE NOT (quant > 100 AND state = 'NY') OR (year = 2021 AND credit = false)"
+    result = get_processed_query(query)
+    
+    assert result['where_conditions'] == {
+        'operator': 'OR',
+        'conditions': [
+            {
+                'operator': 'NOT',
+                'condition': {
+                    'operator': 'AND',
+                    'conditions': [
+                        {'column': 'quant', 'operator': '>', 'value': 100.0},
+                        {'column': 'state', 'operator': '=', 'value': 'NY'}
+                    ]
+                }
+            },
+            {
+                'operator': 'AND',
+                'conditions': [
+                    {'column': 'year', 'operator': '=', 'value': 2021},
+                    {'column': 'credit', 'operator': '=', 'value': False}
+                ]
+            }
+        ]
     }
 
-    # Path to the file you want to upload
-    file_path = 'path/to/your/file.csv'  # or 'path/to/your/file.xlsx' for Excel files
 
-    # Name of the table in PostgreSQL
-    table_name = 'your_table_name'
-
-    upload_file_to_postgresql(file_path, table_name, conn_params)
-
-'''
-
-
-
-
-
-
-
-
-
-
-
-
-'''
-
-
-
-
-
-
-
-
-# Define your string
-no_select = "OVER 2 WHERE 1.prod = prod, 2.prod != prod"
-
-# Create a temporary file and write the string to it
-with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.txt') as temp_file:
-    temp_file.write(no_select)
-    temp_file_path = temp_file.name
-
-# Print the path to the temporary file
-print(f"String written to temporary file: {temp_file_path}")
+def test_parsed_such_that_structure():
+    """Test the structure of parsed SUCH THAT conditions with NOT, AND, OR, and parentheses."""
+    query = "SELECT cust FROM sales OVER g1,g2 SUCH THAT g1.quant > 50 AND NOT (g1.state = 'NY' OR g1.year = 2021), g2.credit = true OR g2.credit = false"
+    result = get_processed_query(query)
+    
+    assert result['such_that_conditions'] == [
+        {
+            'group': 'g1',
+            'operator': 'AND',
+            'conditions': [
+                {'group': 'g1', 'column': 'quant', 'operator': '>', 'value': 50.0},
+                {
+                    'operator': 'NOT',
+                    'condition': {
+                        'group': 'g1',
+                        'operator': 'OR',
+                        'conditions': [
+                            {'group': 'g1', 'column': 'state', 'operator': '=', 'value': 'NY'},
+                            {'group': 'g1', 'column': 'year', 'operator': '=', 'value': 2021}
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            'group': 'g2',
+            'operator': 'OR',
+            'conditions': [
+                {'group': 'g2', 'column': 'credit', 'operator': '=', 'value': True},
+                {'group': 'g2', 'column': 'credit', 'operator': '=', 'value': False}
+            ]
+        }
+    ]
 
 
-class TestQueryParser(unit.TestCase):
-    def setUp(self):
-        self.database, self.columns, self.column_datatypes = get_database()
-       
+def test_parsed_having_structure():
+    """Test the structure of parsed HAVING conditions with NOT, AND, OR, and parentheses."""
+    query = "SELECT cust FROM sales OVER g1 HAVING NOT (g1.quant.sum > 1000 OR g1.quant.avg > 50) AND NOT (quant.max < 90 OR quant.min > 10)"
+    result = get_processed_query(query)
+    
+    assert result['having_conditions'] == {
+        'operator': 'AND',
+        'conditions': [
+            {
+                'operator': 'NOT',
+                'condition': {
+                    'operator': 'OR',
+                    'conditions': [
+                        {'group': 'g1', 'column': 'quant', 'function': 'sum', 'operator': '>', 'value': 1000.0},
+                        {'group': 'g1', 'column': 'quant', 'function': 'avg', 'operator': '>', 'value': 50.0}
+                    ]
+                }
+            },
+            {
+                'operator': 'NOT',
+                'condition': {
+                    'operator': 'OR',
+                    'conditions': [
+                        {'column': 'quant', 'function': 'max', 'operator': '<', 'value': 90.0},
+                        {'column': 'quant', 'function': 'min', 'operator': '>', 'value': 10.0}
+                    ]
+                }
+            }
+        ]
+    }
+
+
+'''Testing collection of aggregate functions from HAVING and SELECT'''
+
+def test_aggregate_functions_in_select_only():
+    query = """
+    SELECT cust, quant.sum, g1.quant.min
+    FROM sales
+    OVER g1
+    WHERE quant > 100
+    SUCH THAT g1.state = 'NY'
+    HAVING quant.avg > 50
+    ORDER BY 2
+    """
+    result = get_processed_query(query)
+    # We expect the aggregates from the SELECT clause:
+    #   - quant.sum (global aggregate)
+    #   - g1.quant.min (group-specific aggregate)
+    # And from the HAVING clause:
+    #   - quant.avg (global aggregate in the HAVING condition)
+    expected_aggregates = [
+        {'column': 'quant', 'function': 'sum', 'datatype': 'numerical'},
+        {'group': 'g1', 'column': 'quant', 'function': 'min', 'datatype': 'numerical'},
+        {'column': 'quant', 'function': 'avg', 'operator': '>', 'value': 50.0}
+    ]
+    # Since the order might differ, we compare sorted lists.
+    result_aggs = sorted(result.get('aggregate_functions', []), key=lambda agg: (agg.get('group', ''), agg['column'], agg['function']))
+    expected_aggs = sorted(expected_aggregates, key=lambda agg: (agg.get('group', ''), agg['column'], agg['function']))
+    assert result_aggs == expected_aggs
+
+def test_aggregate_functions_in_having_nested():
+    query = """
+    SELECT cust
+    FROM sales
+    OVER g1
+    WHERE quant > 100
+    SUCH THAT g1.state = 'NY'
+    HAVING (g1.quant.min > 100 AND g1.quant.max < 500) OR NOT (g1.quant.avg = 200)
+    ORDER BY 1
+    """
+    result = get_processed_query(query)
+    # Expected aggregates from the HAVING clause:
+    expected_aggregates = [
+        {'group': 'g1', 'column': 'quant', 'function': 'min', 'operator': '>', 'value': 100.0},
+        {'group': 'g1', 'column': 'quant', 'function': 'max', 'operator': '<', 'value': 500.0},
+        {'group': 'g1', 'column': 'quant', 'function': 'avg', 'operator': '=', 'value': 200.0}
+    ]
+    result_aggs = sorted(result.get('aggregate_functions', []), key=lambda agg: (agg.get('group', ''), agg['column'], agg['function']))
+    expected_aggs = sorted(expected_aggregates, key=lambda agg: (agg.get('group', ''), agg['column'], agg['function']))
+    assert result_aggs == expected_aggs
+
+def test_no_aggregate_functions():
+    query = """
+    SELECT cust, state
+    FROM sales
+    OVER g1
+    WHERE quant > 100
+    SUCH THAT g1.state = 'NY'
+    ORDER BY 1
+    """
+    result = get_processed_query(query)
+    # There are no aggregate expressions in SELECT or HAVING.
+    assert result.get('aggregate_functions', []) == []
+
+def test_invalid_aggregate_in_select():
+    query = """
+    SELECT cust, unknown.sum
+    FROM sales
+    OVER g1
+    WHERE quant > 100
+    SUCH THAT g1.state = 'NY'
+    HAVING quant.avg > 50
+    ORDER BY 2
+    """
+    with pytest.raises(ParsingError):
+        get_processed_query(query)
 
 
 
 
-    @pytest.fixture
-def temp_file(request):
-    content = request.param
-    with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.txt') as temp_file:
-        temp_file.write(content)
-        temp_file_path = temp_file.name
-    yield temp_file_path
-    os.remove(temp_file_path)
-
-@pytest.fixture
-def parser(temp_file):
-    column_names = ["prod"]
-    column_datatypes = ["string"]
-    return Parser(temp_file, column_names, column_datatypes)
-
-@pytest.mark.parametrize('temp_file', ["OVER 2 WHERE 1.prod = prod, 2.prod != prod"], indirect=True)
-def test_parser_with_content_1(parser):
-    assert parser.file is not None
-    assert parser.column_names == ["prod"]
-    assert parser.column_datatypes == ["string"]
-
-@pytest.mark.parametrize('temp_file', ["OVER 3 WHERE 1.prod = prod, 3.prod != prod"], indirect=True)
-def test_parser_with_content_2(parser):
-    assert parser.file is not None
-    assert parser.column_names == ["prod"]
-    assert parser.column_datatypes == ["string"]
-
-    # Queries with SELECT errors
-    def test_no_select(self):
-        no_select = "OVER 2 WHERE 1.prod = prod, 2.prod != prod"
-        with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.txt') as file:
-            file.write(no_select)
-            file_path = file.name
-        with self.assertRaises(ParsingError) as cm:
-            self.parser.parse(no_select)
-        self.assertEqual(str(cm.exception), "ParsingError: Query must start with SELECT")
-
-    def test_empty_select(self):
-        empty_select = "SELECT WHERE cust='Dan'"
-        with self.assertRaises(ParsingError) as cm:
-            self.parser.parse(empty_select)
-        self.assertEqual(str(cm.exception), "ParsingError: WHERE clause is missing")
-
-    def test_select_bad_column(self):
-        select_bad_column = "SELECT cust,product,sum_quant HAVING sum_quant >= 1"
-        # Assuming this should also raise ParsingError based on your logic
-        with self.assertRaises(ParsingError) as cm:
-            self.parser.parse(select_bad_column)
-        self.assertEqual(str(cm.exception), "ParsingError: HAVING clause without valid aggregate")
-
-    def test_select_wrong_group_aggregate(self):
-        select_wrong_group_aggregate = "SELECT cust,month,day,2_avg_quant OVER 1 where 1.year = 2016"
-        # Assuming this should raise a ParsingError
-        with self.assertRaises(ParsingError) as cm:
-            self.parser.parse(select_wrong_group_aggregate)
-        self.assertEqual(str(cm.exception), "ParsingError: HAVING clause without valid aggregate")  # Example message
-
-    def test_select_bad_aggregate(self):
-        select_bad_aggregate = "SELECT cust, div_quant"
-        with self.assertRaises(ParsingError) as cm:
-            self.parser.parse(select_bad_aggregate)
-        self.assertEqual(str(cm.exception), "ParsingError: HAVING clause without valid aggregate")  # Example message
-
-if __name__ == '__main__':
-    pytest.main()
-
-    '''
