@@ -22,7 +22,7 @@ class MainWindow(QMainWindow,CentralWidgetActions,SidePanelActions):
         super().__init__() 
         
         self.new_query_counter = 1
-        self.background_image = os.path.join('assets', 'images', 'home_icon.png')
+        self.background_image = os.path.join('public', 'images', 'home_icon.png')
         
         self.initHomeWindow()
         self.showLayout()
