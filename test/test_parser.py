@@ -498,6 +498,29 @@ def test_invalid_aggregate_in_select():
     with pytest.raises(ParsingError):
         get_processed_query(query)
 
+def test_parser_column_indexes_for_sales():
+    
+    query = 'SELECT cust FROM sales'
+
+
+    try:
+        processed = get_processed_query(query)
+    except ParsingError as e:
+        pytest.fail(f"Parser raised an unexpected error: {e}")
+
+    # Build the expected column indexes mapping.
+    expected_columns = ['cust', 'prod', 'day', 'month', 'year', 'state', 'quant', 'date', 'credit']
+    expected_indexes = {col: i for i, col in enumerate(expected_columns)}
+
+    assert 'column_indexes' in processed, "'column_indexes' key not found in the processed query struct."
+    assert processed['column_indexes'] == expected_indexes, (
+        f"Expected column_indexes {expected_indexes} but got {processed['column_indexes']}"
+    )
+
+
+if __name__ == '__main__':
+    pytest.main()
+
 
 
 

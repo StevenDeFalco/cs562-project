@@ -93,6 +93,7 @@ def build_query_struct(query):
         raise ParsingError(f"Error accessing table '{table_name}'")
     struct['datatable'] = datatable
     struct['columns'] = columns_data  # Dictionary of column names and their data types
+    struct['column_indexes'] = {col: idx for idx, col in enumerate(columns_data.keys())} # Map column indexes top column names in the datatable
 
     # Process OVER clause
     aggregate_groups = [g.strip() for g in keyword_clauses[2].split(',')]
