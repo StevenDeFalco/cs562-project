@@ -7,7 +7,7 @@ from src.connect.postgres_oids import NUMERICAL_OIDs, STRING_OIDs, DATE_OID, BOO
 
 TABLES_DIRECTORY_PATH = '.tables'
 
-def import_table(table, username,password,host,port):
+def import_table(table,username,password,host,port):
     
     try:
         conn = psycopg2.connect(

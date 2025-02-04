@@ -498,6 +498,9 @@ def test_invalid_aggregate_in_select():
     with pytest.raises(ParsingError):
         get_processed_query(query)
 
+
+'''Testing column indexes are store correctly in the query struct'''
+
 def test_parser_column_indexes_for_sales():
     
     query = 'SELECT cust FROM sales'
