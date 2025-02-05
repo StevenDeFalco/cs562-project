@@ -4,17 +4,13 @@ import psycopg2.extras
 import pytest
 from decimal import Decimal
 from dotenv import load_dotenv
-import src.execution.execute as exe 
+import src.execution.execute as exe
 
 ##############################
 # Helper Functions
 ##############################
 
 def execute_sql_query_through_postgres(sql):
-    """
-    Connect to Postgres using environment variables,
-    execute the given SQL query, and return the rows as a list of dictionaries.
-    """
     load_dotenv()
     host = os.getenv('HOST')
     user = os.getenv('USERNAME')
@@ -36,11 +32,8 @@ def execute_sql_query_through_postgres(sql):
     conn.close()
     return [dict(row) for row in rows]
 
+
 def round_value(val):
-    """
-    Recursively convert numeric values (floats and Decimals) to float and round them to 2 decimals.
-    For dicts or lists, apply recursively.
-    """
     if isinstance(val, (float, int)):
         return round(val, 2)
     elif isinstance(val, Decimal):
@@ -52,27 +45,45 @@ def round_value(val):
     else:
         return val
 
+
 def normalize_row(row):
-    """
-    Return a new dictionary where all numeric values are rounded to 2 decimals
-    (and Decimals are converted to floats).
-    """
     return {k: round_value(v) for k, v in row.items()}
 
+
 def normalize_result(rows, sort_key='cust'):
-    """
-    Normalize the result rows by rounding numbers and sort them by the given sort_key.
-    """
     normalized = [normalize_row(row) for row in rows]
     return sorted(normalized, key=lambda row: row.get(sort_key))
 
+
 def rows_to_value_set(rows):
-    """
-    Convert a list of dictionaries (rows) into a set of tuples of values.
-    For each row, sort the keys alphabetically and create a tuple of the corresponding values.
-    This ignores the column names.
-    """
     return {tuple(row[k] for k in sorted(row.keys())) for row in rows}
+
+
+def debug_mismatch(expected_set, received_set):
+    missing = expected_set - received_set
+    extra = received_set - expected_set
+    print("\n\n--- DEBUG INFO ---")
+    print(f"Total expected rows: {len(expected_set)}")
+    print(f"Total received rows: {len(received_set)}")
+    print(f"Missing rows ({len(missing)}):", missing)
+    print(f"Extra rows ({len(extra)}):", extra)
+    print("--- END DEBUG ---\n\n")
+
+def _test_query(sql, esql, sort_key='cust'):
+    sql_res = execute_sql_query_through_postgres(sql)
+    expected = normalize_result(sql_res, sort_key)
+    esql_res = exe.execute(esql)
+    received = normalize_result(esql_res, sort_key)
+
+    assert len(expected) == len(received), f"Expected {len(expected)} rows but received {len(received)} rows."
+    
+    expected_set = rows_to_value_set(expected)
+    received_set = rows_to_value_set(received)
+    
+    if expected_set != received_set:
+        debug_mismatch(expected_set, received_set)
+    
+    assert expected_set == received_set, f"Rows differ: {expected_set ^ received_set}"
 
 ##############################
 # Test Cases
@@ -80,11 +91,11 @@ def rows_to_value_set(rows):
 
 @pytest.mark.timeout(5)
 def test_execute_not_hanging():
-    query = """
+    esql = """
         SELECT cust, prod, day, month, year, state, quant, date, credit
         FROM sales
     """
-    result = exe.execute(query)
+    result = exe.execute(esql)
     assert result is not None, "execute() returned None or did not complete."
 
 @pytest.mark.timeout(5)
@@ -94,20 +105,10 @@ def test_select_all():
         SELECT cust, prod, day, month, year, state, quant, date, credit
         FROM sales
     """
-    sql_res = execute_sql_query_through_postgres(sql)
-    expected = normalize_result(sql_res)
-    esql_res = exe.execute(esql)
-    received = normalize_result(esql_res)
-    
-    assert len(expected) == len(received), f"Expected {len(expected)} rows but received {len(received)} rows."
-    
-    expected_set = rows_to_value_set(expected)
-    received_set = rows_to_value_set(received)
-    # We use set comparison here. Column names are ignored.
-    assert expected_set == received_set, f"Rows differ: {expected_set ^ received_set}"
+    _test_query(sql, esql, sort_key='cust')
 
 @pytest.mark.timeout(5)
-def test_basic_query1():
+def test_basic_query_num():
     sql = """
         SELECT cust, quant
         FROM sales
@@ -119,16 +120,52 @@ def test_basic_query1():
         FROM sales
         WHERE quant > 100
     """
-    sql_res = execute_sql_query_through_postgres(sql)
-    expected = normalize_result(sql_res)
-    esql_res = exe.execute(esql)
-    received = normalize_result(esql_res)
-    
-    assert len(expected) == len(received), f"Expected {len(expected)} rows but received {len(received)} rows."
-    
-    expected_set = rows_to_value_set(expected)
-    received_set = rows_to_value_set(received)
-    assert expected_set == received_set, f"Rows differ: {expected_set ^ received_set}"
+    _test_query(sql, esql, sort_key='cust')
+
+@pytest.mark.timeout(5)
+def test_basic_query_boolean():
+    sql = """
+        SELECT cust, prod, quant, date
+        FROM sales
+        where credit = true
+        GROUP BY cust, prod, quant, date
+        
+    """
+    esql = """
+        SELECT cust, prod, quant, date
+        FROM sales
+        Where credit = true
+    """
+    _test_query(sql, esql, sort_key='cust')
+
+def test_basic_query_date():
+    sql = """
+        select cust,prod, sum(quant) from sales
+        where date > '2019-04-12'
+        group by cust,prod
+        
+    """
+    esql = """
+        SELECT cust, prod, quant.sum
+        FROM sales
+        where date > '2019-04-12'
+    """
+    _test_query(sql, esql, sort_key='cust')
+
+@pytest.mark.timeout(5)
+def test_basic_query_string():
+    sql = """
+        SELECT cust, prod, year
+        FROM sales
+        WHERE state = 'NY'
+        GROUP BY cust, prod, year
+    """
+    esql = """
+        SELECT cust, prod, year
+        FROM sales
+        WHERE state = 'NY'
+    """
+    _test_query(sql, esql, sort_key='cust')
 
 @pytest.mark.timeout(5)
 def test_basic_query2():
@@ -143,16 +180,7 @@ def test_basic_query2():
         FROM sales
         ORDER BY 1
     """
-    sql_res = execute_sql_query_through_postgres(sql)
-    expected = normalize_result(sql_res)
-    esql_res = exe.execute(esql)
-    received = normalize_result(esql_res)
-    
-    assert len(expected) == len(received), f"Expected {len(expected)} rows but received {len(received)} rows."
-    
-    expected_set = rows_to_value_set(expected)
-    received_set = rows_to_value_set(received)
-    assert expected_set == received_set, f"Rows differ: {expected_set ^ received_set}"
+    _test_query(sql, esql, sort_key='cust')
 
 @pytest.mark.timeout(5)
 def test_basic_query3():
@@ -167,65 +195,7 @@ def test_basic_query3():
         FROM sales
         WHERE state = 'NY'
     """
-    sql_res = execute_sql_query_through_postgres(sql)
-    expected = normalize_result(sql_res)
-    esql_res = exe.execute(esql)
-    received = normalize_result(esql_res)
-    
-    assert len(expected) == len(received), f"Expected {len(expected)} rows but received {len(received)} rows."
-    
-    expected_set = rows_to_value_set(expected)
-    received_set = rows_to_value_set(received)
-    assert expected_set == received_set, f"Rows differ: {expected_set ^ received_set}"
-
-
-@pytest.mark.timeout(5)
-def test_basic_query2():
-    sql = """
-        SELECT cust, prod, quant, date
-        FROM sales
-        GROUP BY cust, prod, quant, date
-        ORDER BY cust
-    """
-    esql = """
-        SELECT cust, prod, quant, date
-        FROM sales
-        ORDER BY 1
-    """
-    sql_res = execute_sql_query_through_postgres(sql)
-    expected = normalize_result(sql_res)
-    esql_res = exe.execute(esql)
-    received = normalize_result(esql_res)
-    
-    assert len(expected) == len(received), f"Expected {len(expected)} rows but received {len(received)} rows."
-    
-    expected_set = rows_to_value_set(expected)
-    received_set = rows_to_value_set(received)
-    assert expected_set == received_set, f"Rows differ: {expected_set ^ received_set}"
-
-@pytest.mark.timeout(5)
-def test_basic_query3():
-    sql = """
-        SELECT cust, prod, year
-        FROM sales
-        WHERE state = 'NY'
-        GROUP BY cust, prod, year
-    """
-    esql = """
-        SELECT cust, prod, year
-        FROM sales
-        WHERE state = 'NY'
-    """
-    sql_res = execute_sql_query_through_postgres(sql)
-    expected = normalize_result(sql_res)
-    esql_res = exe.execute(esql)
-    received = normalize_result(esql_res)
-    
-    assert len(expected) == len(received), f"Expected {len(expected)} rows but received {len(received)} rows."
-    
-    expected_set = rows_to_value_set(expected)
-    received_set = rows_to_value_set(received)
-    assert expected_set == received_set, f"Rows differ: {expected_set ^ received_set}"
+    _test_query(sql, esql, sort_key='cust')
 
 @pytest.mark.timeout(5)
 def test_mf_query():
@@ -278,16 +248,7 @@ def test_mf_query():
         FROM sales OVER nj,ny,ct
         SUCH THAT nj.state = 'NJ', ny.state = 'NY', ct.state = 'CT'
     """
-    sql_res = execute_sql_query_through_postgres(sql)
-    expected = normalize_result(sql_res)
-    esql_res = exe.execute(esql)
-    received = normalize_result(esql_res)
-    
-    assert len(expected) == len(received), f"Expected {len(expected)} rows but received {len(received)} rows."
-    
-    expected_set = rows_to_value_set(expected)
-    received_set = rows_to_value_set(received)
-    assert expected_set == received_set, f"Rows differ: {expected_set ^ received_set}"
+    _test_query(sql, esql, sort_key='cust')
 
 @pytest.mark.timeout(5)
 def test_mf_query_having():
@@ -353,17 +314,59 @@ def test_mf_query_having():
                   q4.month = 10 or q4.month = 11 or q4.month = 12
         HAVING q1.quant.max < 1000 and not q2.quant.min < 20
     """
-    #
-    sql_res = execute_sql_query_through_postgres(sql)
-    expected = normalize_result(sql_res)
-    esql_res = exe.execute(esql)
-    received = normalize_result(esql_res)
-    
-    assert len(expected) == len(received), f"Expected {len(expected)} rows but received {len(received)} rows."
-    
-    expected_set = rows_to_value_set(expected)
-    received_set = rows_to_value_set(received)
-    assert expected_set == received_set, f"Rows differ: {expected_set ^ received_set}"
+    _test_query(sql, esql, sort_key='cust')
+
+@pytest.mark.timeout(5)
+def test_mf_query_where():
+    """
+    Compare a multi-fact query (using OVER and SUCH THAT clauses)
+    to a standard SQL query using CTEs and LEFT JOINs.
+    """
+    sql = """
+        WITH groups AS (
+            SELECT cust, prod
+            FROM sales
+            GROUP BY cust, prod
+        ),
+        old AS (
+            SELECT cust, prod , sum(quant) as sum, count(quant) as count
+            FROM sales
+            WHERE date < '2017-1-1' and credit = true
+            GROUP BY cust, prod
+        ),
+		newer AS (
+            SELECT cust, prod, sum(quant) as sum, count(quant) as count
+            FROM sales
+            WHERE date >= '2017-1-1' and date < '2018-12-31' and credit = true
+            GROUP BY cust, prod
+        ),
+		new AS (
+            SELECT cust, prod , sum(quant) as sum, count(quant) as count
+            FROM sales
+            WHERE date >= '2018-12-31' and credit = true
+            GROUP BY cust, prod
+        )
+        SELECT 
+            g.cust cust, 
+            g.prod prod,
+         	old.sum old_sum, old.count old_count,
+			newer.sum newer_sum, newer.count newer_count,
+			new.sum new_sum,new.count new_count
+        FROM groups g
+        LEFT JOIN old ON old.cust = g.cust AND old.prod = g.prod
+		LEFT JOIN newer ON newer.cust = g.cust AND newer.prod = g.prod
+		LEFT JOIN new ON new.cust = g.cust AND new.prod = g.prod
+        ORDER BY g.cust, g.prod
+    """
+    esql = """
+        SELECT cust, prod, old.quant.sum, old.quant.count, newer.quant.sum, newer.quant.count, new.quant.sum, new.quant.count
+        FROM sales OVER old,newer,new
+        WHERE credit = true
+        SUCH THAT old.date < '2017-1-1',
+                  newer.date >= '2017-1-1' and newer.date < '2018-12-31',
+                  new.date >= '2018-12-31' 
+    """
+    _test_query(sql, esql, sort_key='cust')
 
 
 if __name__ == '__main__':

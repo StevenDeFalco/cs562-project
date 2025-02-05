@@ -1,4 +1,3 @@
-import sys
 import datetime
 
 # Global variables for the current datatable, column indexes, and column types.
