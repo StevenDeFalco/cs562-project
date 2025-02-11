@@ -1,0 +1,15 @@
+SELECT ATTRIBUTE(S):
+cust, 1_sum_quant, 2_sum_quant, 3_sum_quant, 4_sum_quant
+NUMBER OF GROUPING VARIABLES(n):
+4
+GROUPING ATTRIBUTES(V):
+cust
+F-VECT([F]):
+1_sum_quant, 2_sum_quant, 3_sum_quant, 3_avg_quant, 4_avg_quant, 4_sum_quant
+SELECT CONDITION-VECT([σ]):
+1.state='NY'
+2.state='NJ'
+3.state='CT'
+4.state='PA
+HAVING_CONDITION(G):
+1_sum_quant > ( 2_sum_quant - 1000 ) and 3_avg_quant + 10 > 4_avg_quant

@@ -1,15 +1,4 @@
-env/
-venv/
-
-__pycache__/
-
-.tables/
-
+/env
 .pytest_cache
+__pycache__
 .env
-.DS_Store
-
-notes
-
-*.csv
-
