@@ -1,5 +1,0 @@
-# OIDs for datatypes in postgreSQL
-NUMERICAL_OIDs = [21, 23, 20, 1700, 700, 701]
-STRING_OIDs = [25, 1042, 1043]
-DATE_OID = 1082
-BOOLEAN_OID = 16

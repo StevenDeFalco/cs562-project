@@ -1,0 +1,13 @@
+SELECT ATTRIBUTE(S):
+prod, 1_sum_quant, 1_count_quant, 1_avg_quant, 2_sum_quant, 2_count_quant, 2_avg_quant, 3_sum_quant, 3_count_quant, 3_avg_quant
+NUMBER OF GROUPING VARIABLES(n):
+3
+GROUPING ATTRIBUTES(V):
+prod
+F-VECT([F]):
+1_sum_quant, 2_sum_quant, 3_sum_quant, 1_count_quant, 2_count_quant, 3_count_quant, 1_avg_quant, 2_avg_quant, 3_avg_quant 
+SELECT CONDITION-VECT([σ]):
+1.cust='Boo'
+2.cust='Dan'
+3.cust='Emily'
+HAVING_CONDITION(G):
